@@ -10,6 +10,6 @@ Fire up two terminals. In the first one, do:
 In the second one, do:
 
 ```
-	cd backend
+	cd frontend
 	yarn start
 ```
