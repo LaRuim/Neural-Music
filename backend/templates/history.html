@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Transaction History
+{% endblock %}
+
+{% block main %}
+    <div class="container">
+      <h2>Transaction History</h2>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Shares Transacted</th>
+            <th>Share Price when Transacted</th>
+            <th>Time of Transaction</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for history in historystock %}
+                <tr>
+                    <td>{{ history.symbol }}</td>
+                    <td>{{ history.shares }}</td>
+                    <td>{{ history.price_per_share | usd }}</td>
+                    <td>{{ history.created_at }}</td>
+                </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+{% endblock %}

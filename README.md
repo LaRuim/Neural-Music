@@ -1,4 +1,15 @@
-# moosic-generation
-Neural Music generation (for now)
+# Running:
 
-Hello boys
+Fire up two terminals. In the first one, do:
+
+```
+	cd frontend
+	yarn start-api
+```
+
+In the second one, do:
+
+```
+	cd backend
+	yarn start
+```
