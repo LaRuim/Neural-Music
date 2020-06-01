@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './Login.css';
 import { useDispatch, useSelector } from "react-redux";
 import { Redirect } from "react-router-dom";
 import { show_login } from '../actions/actions.js'
+import './Login.css'
 
 const RegisterPage = () => {
 
