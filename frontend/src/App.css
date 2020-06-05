@@ -1,0 +1,22 @@
+.App {
+  text-align: center;
+}
+
+.nav-link {
+  cursor: pointer;
+}
+
+.myNav {
+  position: absolute;
+  left: 300px;
+  top: 220px;
+}
+
+p{
+  max-width:800px;
+  word-wrap:break-word;
+}
+
+a{
+  cursor:pointer;
+}

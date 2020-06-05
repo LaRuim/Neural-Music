@@ -1,0 +1,96 @@
+Using TensorFlow backend.
+1. Parsing ./trainset/Pokemon/Pokemon Omega RubyAlpha Sapphire - Strains of a New Beginning Theme of rs.mid
+2. Parsing ./trainset/Pokemon/Pokemon DiamondPearlPlatinum - Game Corner.mid
+3. Parsing ./trainset/Pokemon/Pokemon RedBlueYellow - Viridian Forest.mid
+4. Parsing ./trainset/Pokemon/Pokemon RedBlueYellow - Champion Battle.mid
+5. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - Sprout Tower.mid
+6. Parsing ./trainset/Pokemon/Pokemon BlackWhite - White Forest.mid
+7. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - Professor Oaks Theme.mid
+8. Parsing ./trainset/Pokemon/Pokemon Mystery Dungeon Gates to Infinity - File Select.mid
+9. Parsing ./trainset/Pokemon/Pokemon Mystery Dungeon Explorers of TimeDarknessSky - Sealed Ruin Pit.mid
+10. Parsing ./trainset/Pokemon/Pokemon DiamondPearlPlatinum - DialgaPalkia Appear.mid
+11. Parsing ./trainset/Pokemon/Pokemon RedBlueYellow - Indigo Plateau.mid
+12. Parsing ./trainset/Pokemon/Pokemon HeartGoldSoulSilver - Lyras Theme.mid
+13. Parsing ./trainset/Pokemon/Pokemon Mystery Dungeon Explorers of TimeDarknessSky - Spindas Cafe.mid
+14. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - Azalea TownBlackthorn City.mid
+15. Parsing ./trainset/Pokemon/Pokemon RedBlueYellow - Mt Moon.mid
+16. Parsing ./trainset/Pokemon/Pokemon Colosseum - Pyrite Town.mid
+17. Parsing ./trainset/Pokemon/Pokemon Mystery Dungeon Explorers of TimeDarknessSky - Temporal Tower.mid
+18. Parsing ./trainset/Pokemon/Pokemon DiamondPearlPlatinum - Torn WorldDistortion World.mid
+19. Parsing ./trainset/Pokemon/Pokemon RubySapphireEmerald - Oceanic Museum.mid
+20. Parsing ./trainset/Pokemon/Pokemon XY - Route 4567.mid
+21. Parsing ./trainset/Pokemon/Pokemon - ok!.mid
+22. Parsing ./trainset/Pokemon/Pokemon BlackWhite - Relic Song.mid
+23. Parsing ./trainset/Pokemon/Pokemon Colosseum - Miror B Battle.mid
+24. Parsing ./trainset/Pokemon/Pokemon XD Gale of Darkness - Mt Battle Lobby.mid
+25. Parsing ./trainset/Pokemon/Pokemon BlackWhite - Ending Onward to Our Own Futures.mid
+26. Parsing ./trainset/Pokemon/Pokemon BlackWhite - Skyarrow Bridge.mid
+27. Parsing ./trainset/Pokemon/Pokemon Mystery Dungeon Explorers of TimeDarknessSky - A Wish For Peace.mid
+28. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - National Park.mid
+29. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - Dark Cave.mid
+30. Parsing ./trainset/Pokemon/Pokemon RubySapphireEmerald - Littleroot Town.mid
+31. Parsing ./trainset/Pokemon/Pokemon RedBlueYellow - Route 24.mid
+32. Parsing ./trainset/Pokemon/Pokemon DiamondPearlPlatinum - Route 209.mid
+33. Parsing ./trainset/Pokemon/Pokemon Black & White - Village Bridge.mid
+34. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - Route 38.mid
+35. Parsing ./trainset/Pokemon/Pokemon Omega RubyAlpha Sapphire - Trainers Eyes Meet Poke Fan.mid
+36. Parsing ./trainset/Pokemon/Pokemon Mystery Dungeon BlueRed Rescue Team - Escape Through the Snow  Snow Refugees.mid
+37. Parsing ./trainset/Pokemon/Pokemon RedBlueYellow - Surf Theme.mid
+38. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - Professor Elms Lab.mid
+39. Parsing ./trainset/Pokemon/Pokemon HeartGoldSoulSilver - Pokemaniac Encounter.mid
+40. Parsing ./trainset/Pokemon/Pokemon Mystery Dungeon BlueRed Rescue Team - Title Screen.mid
+41. Parsing ./trainset/Pokemon/Pokemon Mystery Dungeon Explorers of TimeDarknessSky - Steam Cave.mid
+42. Parsing ./trainset/Pokemon/Pokemon - Poke Center.mid
+43. Parsing ./trainset/Pokemon/Pokemon DiamondPearlPlatinum - Route 228 Night.mid
+44. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - Pokemon Lullaby.mid
+45. Parsing ./trainset/Pokemon/Pokemon RedBlueYellow - Gym Leader Battle.mid
+46. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - Dragons Den.mid
+47. Parsing ./trainset/Pokemon/Pokemon - Littleroot Town.mid
+48. Parsing ./trainset/Pokemon/Pokemon HeartGoldSoulSilver - Instructions.mid
+49. Parsing ./trainset/Pokemon/Pokemon RubySapphireEmerald - Route 104.mid
+50. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - Union Cave.mid
+51. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - Title.mid
+52. Parsing ./trainset/Pokemon/Pokemon HeartGoldSoulSilver - PokeWalker Synchronisation.mid
+53. Parsing ./trainset/Pokemon/Pokemon DiamondPearlPlatinum - Battle Rival.mid
+54. Parsing ./trainset/Pokemon/Pokemon DiamondPearlPlatinum - Sandgem Town Day.mid
+55. Parsing ./trainset/Pokemon/Pokemon GoldSilverCrystal - Route 32.mid
+56. Parsing ./trainset/Pokemon/Pokemon Mystery Dungeon Explorers of TimeDarknessSky - The Gatekeepers.mid
+Traceback (most recent call last):
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/common/classTools.py", line 52, in isNum
+    dummy = usrData + 0
+TypeError: unsupported operand type(s) for +: 'Volume' and 'int'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "train_model.py", line 133, in <module>
+    train_network()
+  File "train_model.py", line 122, in train_network
+    notes = get_notes()
+  File "train_model.py", line 21, in get_notes
+    midi = converter.parse(file)
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/converter/__init__.py", line 1129, in parse
+    forceSource=forceSource, **keywords)
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/converter/__init__.py", line 1009, in parseFile
+    v.parseFile(fp, number=number, format=format, forceSource=forceSource, **keywords)
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/converter/__init__.py", line 544, in parseFile
+    self.parseFileNoPickle(fp, number, format, forceSource, **keywords)
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/converter/__init__.py", line 478, in parseFileNoPickle
+    self.subConverter.parseFile(fp, number=number, **keywords)
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/converter/subConverters.py", line 982, in parseFile
+    midiTranslate.midiFilePathToStream(fp, self.stream, **keywords)
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/midi/translate.py", line 1975, in midiFilePathToStream
+    return midiFileToStream(mf, inputM21, **keywords)
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/midi/translate.py", line 2115, in midiFileToStream
+    **keywords)
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/midi/translate.py", line 1878, in midiTracksToStreams
+    **keywords)
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/midi/translate.py", line 1613, in midiTrackToStream
+    midiEventsToChord(chordSub, ticksPerQuarter, c)
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/midi/translate.py", line 547, in midiEventsToChord
+    c.volume = volumes  # can set a list to volume property
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/chord/__init__.py", line 4916, in volume
+    if common.isNum(v):  # create a new Volume
+  File "/home/laruim/.local/lib/python3.6/site-packages/music21/common/classTools.py", line 52, in isNum
+    dummy = usrData + 0
+KeyboardInterrupt
