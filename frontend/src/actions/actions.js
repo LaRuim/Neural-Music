@@ -11,3 +11,17 @@ export const show_login = (showornot) => (
         payload: showornot
     }
 )
+
+export const openPlayer = (bool) => (
+    {
+        type: 'openplayer',
+        payload: bool
+    }
+)
+
+export const openGen = (bool) => (
+    {
+        type: 'opengen',
+        payload: bool
+    }
+)

@@ -26,7 +26,7 @@ const RegisterPage = () => {
     request.append("password", password);
     request.append("confirmation", passwordConfirm);
       
-    fetch('/register', {
+    fetch('http://localhost:5000/register', {
       method: 'POST',
       body: request
     }).then((response) => response.json()).then(
@@ -45,7 +45,7 @@ const RegisterPage = () => {
   return (
     <div>
       <main className="container p-5">
-        <div className="Register">
+        <div className="Login">
           <form id='register' onSubmit={handleSubmit}>
             <div className="form-group">
               <input autoComplete="off" autoFocus className="form-control" name="username" placeholder="Username" type="text" value={username} onChange={event => setUser(event.target.value)} required/>

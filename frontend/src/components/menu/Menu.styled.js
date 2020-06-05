@@ -20,6 +20,21 @@ export const StyledMenu = styled.nav`
     border-top: 1px solid red;
   }
 
+  h3 {
+    font-size: 1.5rem;
+    padding: 0.1rem 0;
+    font-weight: bold;
+    letter-spacing: 0.1rem;
+    color: ${({ theme }) => theme.primaryLight};
+    text-decoration: none;
+    transition: color 0.3s linear;
+    
+    @media (max-width: ${({ theme }) => theme.mobile}) {
+      font-size: 0.5rem;
+      text-align: center;
+    }
+  }
+
   a {
     font-size: 1.1rem;
     padding: 0.5rem 0;

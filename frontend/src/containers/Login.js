@@ -19,12 +19,16 @@ const LoginPage = () => {
     request.append("username", username);
     request.append("password", password);
       
-    fetch('/login', {
+    fetch('http://localhost:5000/login', {
       method: 'POST',
       body: request
     }).then(response => {
+      console.log(response)
       if (response['status'] == 200){
         dispatch(loguserin(true));
+      }
+      else{
+        alert('The username and/or password you entered was wrong. Please try again.');
       }
     })
   }

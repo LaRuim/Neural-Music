@@ -1,10 +1,11 @@
 import os
-from flask import Flask, flash, jsonify, redirect, request, session
+from flask import Flask, flash, json, redirect, request, session
 from flask_session import Session
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 from tempfile import mkdtemp
-from werkzeug.security import check_password_hash, generate_password_hash   
+from werkzeug.security import check_password_hash, generate_password_hash
+import subprocess
 
 app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/myDatabase"
@@ -30,21 +31,23 @@ Session(app)
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if not request.form.get("username"):
-            return jsonify(body='No Username', status=400)
-        elif not request.form.get("password"):
-            return jsonify(body='No Password', status=401)
 
         USER = request.form.get("username")
         user = list(mongo.db.temp.find({'username': USER}))
 
         if len(user) != 1 or not check_password_hash(user[0]["hash"], request.form.get("password")):
-            return {"body": "Error: Invalid Credentials"}, 103
-        #session["username"] = user[0]['username']
-        
-        return jsonify(body='OK', status=200)
+            return app.response_class(response=json.dumps({'body': 'NOT OK'}),
+                                  status=401,
+                                  mimetype='application/json')
+        else:
+            return app.response_class(response=json.dumps({'body': 'LOL OK'}),
+                                    status=200,
+                                    mimetype='application/json')
+
     else:
-        return jsonify(body='NOT OK', status=501)
+        return app.response_class(response=json.dumps({'body': 'WOT'}),
+                                  status=501,
+                                  mimetype='application/json')
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -53,12 +56,31 @@ def register():
         USER = request.form.get("username")
         user = list(mongo.db.temp.find({'username': USER}))
         if len(user) >= 1:
-            return jsonify(body='NOK', status=201)
+            return app.response_class(response=json.dumps({'body': 'NOT OK'}),
+                                  status=401,
+                                  mimetype='application/json')
+
+        
+
 
         HASH=generate_password_hash(request.form.get("password"))
         mongo.db.temp.insert_one({'username': USER, 'hash': HASH})
         
-        return jsonify(body='OK', status=200)
+        itm = mongo.db.temp.find_one({"username":USER})
+        #session['username'] = itm.get('_id')
+
+        return app.response_class(response=json.dumps({'body': 'LOL OK'}),
+                                  status=200,
+                                  mimetype='application/json')
     else:
         return 101
+
+@app.route("/generate", methods=["GET", "POST"])
+def generate():
+    if request.method == 'POST':
+        import create_midi
+        return app.response_class(response=json.dumps({'body': 'LOL OK'}),
+                                  status=200,
+                                  mimetype='application/json')
+
 

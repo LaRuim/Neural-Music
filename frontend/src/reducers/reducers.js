@@ -1,6 +1,8 @@
 let defaultState = {
     hasUserLoggedIn: false,
-    showLogin: true
+    showLogin: true,
+    playeropen: true,
+    generateopen: false
 }
 
 const reducers = (state = defaultState, action) => {
@@ -11,7 +13,15 @@ const reducers = (state = defaultState, action) => {
             return newState;
         case 'registered':
             newState['showLogin'] = action.payload;
-            return newState
+            return newState;
+        case 'openplayer':
+            newState['playeropen'] = true
+            newState['generateopen'] = false
+            return newState;
+        case 'opengen':
+            newState['playeropen'] = false
+            newState['generateopen'] = true
+            return newState;
         default:
             return state;
     }
