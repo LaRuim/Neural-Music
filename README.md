@@ -10,21 +10,29 @@ Run ```sudo apt-get install python3-venv``` if you do not have venv in your syst
 	source myVenv/bin/activate
 ```
 
-3. Install requirements
+3. Make sure you have MongoDB installed on your system. Set up the required permissions and, if required, specify the path for Mongo.
+
+4. Install Python requirements
 ```
 	pip3 install -r requirements.txt
 ```
 
-Fire up two terminals. In the first one, do: (make sure you're in your virtual environment for this command)
+Fire up three terminals. In the first one, do:
+
+```
+	sudo mongod
+```
+
+In the second one, do:
 
 ```
 	cd backend 
 	flask run --no-debugger
 ```
 
-In the second one, do:
+In the third one, do:
 
 ```
 	cd frontend
-	yarn start
+	npm start
 ```

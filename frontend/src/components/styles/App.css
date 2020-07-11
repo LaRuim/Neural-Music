@@ -1,0 +1,56 @@
+.App {
+  text-align: center;
+}
+
+.nav-link {
+  cursor: pointer;
+}
+
+.myNav {
+  position: absolute;
+  left: 300px;
+  top: 220px;
+}
+
+p{
+  max-width:800px;
+  word-wrap:break-word;
+}
+
+a{
+  cursor:pointer;
+}
+
+a:hover{
+  text-shadow: 0.07px 0.07px;
+}
+
+
+
+.navbar-brand {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  height: 3em;
+}
+.navbar {
+  box-shadow: 0 3px 3px -2px rgba(0,0,0,.2);
+}
+
+#Heading{
+  text-align: center;
+  margin-left: 33em;
+}
+
+#Logout{
+  text-align: center;
+  margin-left: 27em;
+}
+
+.p-5 {
+  width: 40%;
+  margin-top: 2em
+}
+
+.img{
+  cursor:pointer;
+}

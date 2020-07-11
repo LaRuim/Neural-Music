@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { useDispatch, useSelector } from "react-redux";
 import { loguserin } from '../actions/actions.js'
-import './Login.css'
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../components/styles/Login.css'
 
 const LoginPage = () => {
 
@@ -21,7 +22,8 @@ const LoginPage = () => {
       
     fetch('http://localhost:5000/login', {
       method: 'POST',
-      body: request
+      body: request,
+      credentials: 'include'
     }).then(response => {
       console.log(response)
       if (response['status'] == 200){
