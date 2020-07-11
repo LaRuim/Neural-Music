@@ -25,3 +25,24 @@ export const openGen = (bool) => (
         payload: bool
     }
 )
+
+export const openProfile = (bool) => (
+    {
+        type: 'openprofile',
+        payload: bool
+    }
+)
+
+export const modeSetter = (themeval) => (
+    {
+        type: 'mode',
+        payload: themeval
+    }
+)
+
+export const pathSong = (path) => (
+    {
+        type: 'path',
+        payload: path
+    }
+)

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
+
 import { useDispatch, useSelector } from "react-redux";
 import { Redirect } from "react-router-dom";
 import { show_login } from '../actions/actions.js'
-import './Login.css'
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../components/styles/Login.css'
 
 const RegisterPage = () => {
 
@@ -28,11 +30,13 @@ const RegisterPage = () => {
       
     fetch('http://localhost:5000/register', {
       method: 'POST',
-      body: request
+      body: request,
+      credentials: 'include'
     }).then((response) => response.json()).then(
       (responseJSON) => {
         var response = responseJSON;
-        if (response['status'] == 200){
+        if (response['body'] == 'OK'){
+          alert('You have succesfully registered. Please login with your details to continue.');
           dispatch(show_login(true))
         }
         else{
