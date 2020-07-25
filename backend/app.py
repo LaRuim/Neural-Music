@@ -11,7 +11,7 @@ import sys
 sys.path.append('./scripts')
 import BackingTrack as backingTrack
 import makeMIDI
-
+import Noise_Cancellation
 song = 0
 
 app = Flask(__name__)
@@ -116,6 +116,7 @@ def upload():
         filename = secure_filename('lead.wav')
         destination="/".join(['../frontend/public/uploadSongs', filename])
         song.save(destination)
+        Noise_Cancellation.noisecancel(destination)
         session['uploadFilePath'] = destination
         return app.response_class(response=json.dumps({'body': 'OK'}),
                                   status=200,
