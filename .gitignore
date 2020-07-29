@@ -28,3 +28,9 @@ Neural Music Generation.pdf
 .DS_Store
 weights-improvement.hdf5
 emitter.js
+License.pdf
+.mdb
+Procfile
+*.Identifier
+*.wav
+*.o

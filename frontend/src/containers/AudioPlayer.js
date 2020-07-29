@@ -452,12 +452,12 @@ const AudioPlayer = (theme) => {
                             className="audio-start col-xs-1 form-control"
                         />
                         <input type="text" className="audio-end form-control" />
-                        <label className="audio-pos" style = {{marginLeft:'1em'}}>00:00:00</label>
+                        <p className="audio-pos" style = {{marginLeft:'1em', marginTop:'1em'}}>00:00:00</p>
                         </form>
                         <br/>
                         <form className="form-inline" style = {{marginLeft:'-80px'}}>
                         <div className="form-group">
-                            <label htmlFor="master-gain">Master Volume: </label>
+                            <p htmlFor="master-gain" style={{marginTop:'1em'}}>Master Volume: </p>
                             <input
                             style = {{marginLeft:'1em'}}
                             type="range"
@@ -471,18 +471,18 @@ const AudioPlayer = (theme) => {
                             />
                         </div>
                         <div className="checkbox" style = {{marginLeft:'1em'}}>
-                            <label>
+                            <p style={{marginTop:'1em'}}>
                             <input type="checkbox" className="automatic-scroll"
                                 onChange = {(e) => ee.emit("automaticscroll", e.target.checked)}
                             />{" "}
                             Automatic Scroll
-                            </label>
+                            </p>
                         </div>
                         </form>
                         <br/>
                         <form className="form-inline" style = {{marginLeft:'-80px'}}>
                         <div className="control-group">
-                            <label htmlFor="time">Seek to time (in seconds):</label>
+                            <p htmlFor="time" style={{marginTop:'1em'}}>Seek to time (in seconds):</p>
                             <input
                             type="number"
                             className="form-control"

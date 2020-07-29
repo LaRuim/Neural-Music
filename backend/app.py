@@ -9,9 +9,10 @@ from werkzeug.utils import secure_filename
 import subprocess
 import sys
 sys.path.append('./scripts')
-import BackingTrack as backingTrack
-import makeMIDI
-import Noise_Cancellation
+import noiseCancellation
+import backingTrack
+import convertToMIDIMelodia
+
 song = 0
 
 app = Flask(__name__)
@@ -72,8 +73,9 @@ def register():
     if request.method == "POST":
         session.clear()
         USER = request.form.get("username")
+        print(USER)
         user = list(mongo.db.temp.find({'username': USER}))
-
+        
         if len(user) >= 1:
             return app.response_class(response=json.dumps({'body': 'NOT OK'}),
                                   status=401,
@@ -98,7 +100,7 @@ def generate():
         elif request.form.get('generate') == 'Backing':
             lead = session['uploadFilePath']
             print(lead)
-            makeMIDI.makeMIDI(lead, '../frontend/public/uploadSongs/lead.mid', 125, minduration=0.1)
+            convertToMIDIMelodia.convertToMIDI(lead, '../frontend/public/uploadSongs/lead.mid', 130, minduration=0.01)
             backingTrack.make()
         """try:
             imp.reload(create_midi)
@@ -116,7 +118,7 @@ def upload():
         filename = secure_filename('lead.wav')
         destination="/".join(['../frontend/public/uploadSongs', filename])
         song.save(destination)
-        Noise_Cancellation.noisecancel(destination)
+        noiseCancellation.noiseCancel(destination)
         session['uploadFilePath'] = destination
         return app.response_class(response=json.dumps({'body': 'OK'}),
                                   status=200,
@@ -147,6 +149,11 @@ def getuserdetails():
         return app.response_class(response=json.dumps({'body': userdetails}),
                                     status=200,
                                     mimetype='application/json')
+
+@app.route('/save', methods=["GET", "POST"])
+@cross_origin(supports_credentials=True)
+def save():
+    pa                             
             
 @app.route('/logout', methods=["GET", "POST"])
 @cross_origin(supports_credentials=True)

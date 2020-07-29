@@ -5,9 +5,8 @@ export const theme = {
     primaryHover: '#343078',
     mobile: '576px',
   }
-
 export const lightTheme = {
-    body: '#EEEEEE',
+    body: '/static/player-light.jpeg',
     text: '#222222',
     toggleBorder: '#FFF',
     background: '#363537',
@@ -21,7 +20,7 @@ export const lightTheme = {
     buttontheme: 'light'
 }
 export const darkTheme = {
-    body: '#121212',
+    body: '/static/player-dark.jpg',
     text: '#FAFAFA',
     toggleBorder: '#6B8096',
     background: '#999',

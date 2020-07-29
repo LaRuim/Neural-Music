@@ -25,6 +25,17 @@ import './components/styles/App.css';
 import { lightTheme, darkTheme } from './components/styles/theme'
 import { ThemeProvider } from 'styled-components';
 
+import { BrowserRouter as Router } from "react-router-dom";
+import {
+  MDBNavbar,
+  MDBNavbarBrand,
+  MDBNavbarNav,
+  MDBNavItem,
+  MDBLink,
+  MDBNavbarToggler,
+  MDBCollapse,
+  MDBContainer,
+} from "mdbreact";
 
 
 const App = () => {
@@ -52,13 +63,23 @@ const App = () => {
       </>
     )
   }
-
+  const [collapseID, toggleCollapse] = useState('')
   const generateAccompaniment = Generator() 
-  const register = RegisterPage(); 
   const login = LoginPage();
+  const register = RegisterPage(); 
   const player = AudioPlayer(themeMode);
   const genmusic = GenMusic()
   const profilepage = ProfilePage(theme, themeToggler);
+  const Overlay = () => {
+    return(
+    <div
+      id="sidenav-overlay"
+      style={{ backgroundColor: "transparent" }}
+      onClick={() => toggleCollapse("navbarCollapse")}
+    />
+    )
+  }
+  const overlay = Overlay()
 
   const hamburger = useRef(); 
   OnClickOutside(hamburger, () => setOpen(false));
@@ -66,19 +87,37 @@ const App = () => {
 
   if (!hasUserLoggedIn){
     return (
-          <div className="App" >
-            <nav className="navbar navbar-expand-md navbar-light bg-light border" style = {{padding:'1em'}} >
-                <a className="navbar-brand" href="/"><span>Neural Moosic</span></a>
-                <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" className="navbar-toggler" data-target="#navbar" data-toggle="collapse" type="button">
-                    <span className="navbar-toggler-icon"></span>
-                </button>
-                <div className="collapse navbar-collapse" id="navbar">
-                  <ul className="navbar-nav ml-auto mt-2">
-                      <li className="nav-item"><a className="nav-link" onClick = {() => dispatch(actions.show_login(false))}>Register</a></li>
-                      <li className="nav-item"><a className="nav-link" onClick = {() => dispatch(actions.show_login(true))}>Log In</a></li>
-                  </ul>
-                </div>
-            </nav>
+          <div id="app">
+            <Router>
+              <div>
+                <MDBNavbar dark expand="md" fixed="top">
+                  <MDBContainer>
+                    <MDBNavbarBrand>
+                      <strong className="white-text">Neural Moosic</strong>
+                    </MDBNavbarBrand>
+                    <MDBNavbarToggler
+                      onClick={() => toggleCollapse("navbarCollapse")}
+                    />
+                    <MDBCollapse
+                      id="navbarCollapse"
+                      isOpen={collapseID}
+                      navbar
+                    >
+                      <MDBNavbarNav right>
+                        <MDBNavItem>
+                          <MDBLink onClick = {() => dispatch(actions.show_login(true))}>Login</MDBLink>
+                        </MDBNavItem>
+                        <MDBNavItem>
+                          <MDBLink onClick = {() => dispatch(actions.show_login(false))}>Register</MDBLink>
+                        </MDBNavItem>
+                      </MDBNavbarNav>
+                    </MDBCollapse>
+                  </MDBContainer>
+                </MDBNavbar>
+                {collapseID && overlay}
+              </div>
+            </Router>
+            
             {!showLogin && register}
             {showLogin && login}
           </div>
@@ -86,6 +125,7 @@ const App = () => {
   }
 
   else{ 
+
     var checked;
     fetch('http://localhost:5000/userdetails', {
       method: 'GET',
@@ -100,27 +140,29 @@ const App = () => {
     })
 
     return(
-      <nav>
+      <div id='app'>
       <ThemeProvider theme={themeMode}>
       <>
       <GlobalStyles/>
-            <nav className="navbar" style={{background: themeMode.navbar, padding:'1em'}}>
-            <div className="container-fluid">
-              
+            <nav className="navbar" style={{
+                    background: themeMode.navbar,
+                    opacity: 0.8,
+                    position: 'sticky',
+                    top: '0',
+                    padding:'1em'}}>
               <div className="navbar-brand">
-                {theme === 'light' && <img onClick = {()=>dispatch(actions.openPlayer(true))} style = {{position: 'absolute', top:'0.4em', left: '30em'}} src='./moosiclight.png'></img>}
-                {theme === 'dark' && <img onClick = {()=>dispatch(actions.openPlayer(true))} style = {{position: 'absolute', top:'0.4em', left: '30em'}} src='./moosicdark.png'></img>}
+                {theme === 'light' && <img onClick = {()=>dispatch(actions.openPlayer(true))} style = {{position: 'absolute', top:'0.4em', left: '30em'}} src='./static/moosiclight.png'></img>}
+                {theme === 'dark' && <img onClick = {()=>dispatch(actions.openPlayer(true))} style = {{position: 'absolute', top:'0.4em', left: '30em'}} src='./static/moosicdark.png'></img>}
                 <a className="navbar-brand" onClick = {()=>dispatch(actions.openPlayer(true))} id='Heading' >Neural Moosic</a>
                 <a className='navbar-brand' id='Logout' onClick = {() => {
                   logout(dispatch)}}>Logout</a> 
               </div>
-            </div>
             </nav>
           <nav ref={hamburger}>
             <Burger open={open} setOpen={setOpen} />
             <Menu open={open} setOpen={setOpen} />
             {playeropen && <nav>
-              <nav style={{marginLeft: '300px', marginTop: '30px'}}>
+              <nav style={{marginLeft: '30em', marginTop: '30px'}}>
                 <p>This page allows you to use a feature filled Audio Player.
                 Drag and drop your audio file into the box to play around with it and edit it.
                 </p>
@@ -156,7 +198,7 @@ const App = () => {
               </nav>
             </nav>
               }
-            <nav className='myNav'>
+            <nav className='myNav' style={{marginLeft: '10em'}}>
               {playeropen && player}
               {generateopen && genmusic}
               {profilepageopen && profilepage}
@@ -164,7 +206,7 @@ const App = () => {
           </nav>
           </>
       </ThemeProvider>
-      </nav>
+      </div>
     ) 
   }
 }
