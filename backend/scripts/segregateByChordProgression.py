@@ -2,8 +2,9 @@
 import os
 import shutil
 import glob
-from backingTrack import *
+from utilsMIDI import *
 import music21 as m21 
+
 #functions
 def convert(list): 
     return tuple(list)
@@ -15,11 +16,11 @@ def convert_to_list(tupleOfTuples):
     return final
 
 def preProcessing(file):
-    midi = get_midi(file)
-    time_signatures = get_timesig(file)
-    key_tonic_name, key_mode = get_scale(file)
-    durations = get_duration(file, time_signatures)
-    chords_list = get_chords(midi)
+    midi = getMIDI(file)
+    time_signatures = getTimeSignature(file)
+    key_tonic_name, key_mode = getScale(file)
+    durations = getDurations(file, time_signatures)
+    chords_list = getChordsOnly(midi)
     return [midi, time_signatures, key_tonic_name, key_mode, durations, chords_list]
 
 def translate(progression):

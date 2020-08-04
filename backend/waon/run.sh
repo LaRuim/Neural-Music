@@ -1,3 +1,5 @@
+sudo apt-get install apt-file
+
 { echo "Scanning makefiles for \`pkg-config\` mentions..."
   echo
   PKGS=$( sed 's/#.*$//' Makefile* | sed -n 's/^.*pkg-config  *[^ ]*  *\([^ ]*\) *[^ ] .*$/\1/p' | sort | uniq )
@@ -26,3 +28,6 @@
   echo
   echo "Try installing packages with the command line above, then check \`Makefile\`s and possibly try \`make\`.  There might be some missing packages, hope this little script helped you."
 }
+sudo apt-get install $DEBS
+sudo apt-get install libncurses5-dev libncursesw5-dev
+make

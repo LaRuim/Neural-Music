@@ -12,27 +12,6 @@
 
 #(5) As a future improvement plans are of adding the feature of adaptive noise cancellation or source separation 
 
-colab_requirements = [
-    "pip install tensorflow-gpu==2.0.0-beta0",
-    "pip install librosa",
-    "pip install noisereduce",
-    "pip install soundfile",
-
-]
-
-import sys, subprocess
-
-def run_subprocess_command(cmd):
-    # run the command
-    process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
-    # print the output
-    for line in process.stdout:
-        print(line.decode().strip())
-
-IN_COLAB = "google.colab" in sys.modules
-if IN_COLAB:
-    for i in colab_requirements:
-        run_subprocess_command(i)
 #importing the required libraries
 import glob
 import os
@@ -43,6 +22,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import io
 import matplotlib
+
 #arguments which need to be passed to the function is only the path of the noisy audio file
 def noiseCancel(PATH):
     data, rate = sf.read(PATH)
@@ -50,14 +30,15 @@ def noiseCancel(PATH):
 
     '''fig, ax = plt.subplots(figsize=(20,3)) 
     ax.plot(data)''' #I have commented out the plotting as it was unnecessary....if required uncomment it as needed
-    path = './backend/data/noises'
+    path = './data/noises'
     #The following code parses the noises folder as mentioned by the path variable
     for filename in glob.glob(os.path.join(path, '*.wav')): 
         noise_len = 2
         noise,rateofnoise = sf.read(filename)
-        noise = noise.reshape(rows,2)
+        noise = noise.resize(rows,2)
         noise_clip = noise[:rate*noise_len] #generates noiseclip of length 2sec for the noise cancellation 
         noise_reduced = nr.reduce_noise(audio_clip=data.flatten(), noise_clip=noise_clip.flatten(), prop_decrease=1.0, verbose=False)
         #the above function call can produce various graphs if needed by changing verbose to true
     noise_reduced = noise_reduced.reshape(-1,2)
     sf.write(PATH,noise_reduced,rate)
+    print('Noise Reduced')

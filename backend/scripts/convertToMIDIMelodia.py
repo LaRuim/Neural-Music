@@ -180,4 +180,4 @@ def convertToMIDI(infile, outfile, bpm, smooth=0, minduration=0.1,
     print("Conversion complete.")
 
 
-#convertToMIDI('./c.wav', './c.mid', 80, smooth=0, minduration=0.1)
+#convertToMIDI('./sg.wav', './sg.mid', 78, smooth=0, minduration=0.06)

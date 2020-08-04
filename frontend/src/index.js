@@ -10,6 +10,11 @@ import { store } from './store/index.js'
 import App from "./App";
 
 import registerServiceWorker from './registerServiceWorker';
+import { saveState, clearState } from "./store/localStorage.js";
+
+store.subscribe(() => {
+  saveState(store.getState())
+})
 
 render(
   <Provider store = {store} >

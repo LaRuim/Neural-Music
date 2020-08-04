@@ -2,10 +2,10 @@ let defaultState = {
     hasUserLoggedIn: false,
     showLogin: true,
     playeropen: true,
-    generateopen: false,
     profilepageopen: false,
     mode: 'light',
-    path: './hello.mp3'
+    path: './hello.mp3',
+    userTracks: [[]]
 }
 
 const reducers = (state = defaultState, action) => {
@@ -18,22 +18,14 @@ const reducers = (state = defaultState, action) => {
             newState['showLogin'] = action.payload;
             return newState;
         case 'openplayer':
-            newState['generateopen'] = false
             newState['backingopen'] = false
             newState['profilepageopen'] = false
             newState['playeropen'] = true
-            return newState;
-        case 'opengen':
-            newState['playeropen'] = false
-            newState['backingopen'] = false
-            newState['profilepageopen'] = false
-            newState['generateopen'] = true
             return newState;
         case 'openprofile':
             newState['profilepageopen'] = true
             newState['playeropen'] = false
             newState['backingopen'] = false
-            newState['generateopen'] = false
             return newState;
         case 'mode':
             newState['mode'] = action.payload;
@@ -41,6 +33,18 @@ const reducers = (state = defaultState, action) => {
         case 'path':
             newState['path'] = action.payload;
             return newState;
+        case 'addUserTrack':
+            if (!state.userTracks[0].length){
+                newState['userTracks'] = [action.payload]
+            }
+            else{
+                newState['userTracks'] = [...state.userTracks, action.payload]
+            }
+            console.log(newState, 'inside reducer')
+            return newState
+        case 'clearUserTracks':
+            newState['userTracks'] = [[]]
+            return newState
         default:
             return state;
     }

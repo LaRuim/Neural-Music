@@ -19,13 +19,6 @@ export const openPlayer = (bool) => (
     }
 )
 
-export const openGen = (bool) => (
-    {
-        type: 'opengen',
-        payload: bool
-    }
-)
-
 export const openProfile = (bool) => (
     {
         type: 'openprofile',
@@ -44,5 +37,18 @@ export const pathSong = (path) => (
     {
         type: 'path',
         payload: path
+    }
+)
+
+export const addUserTrack = (newTrack) => (
+    {
+        type: 'addUserTrack',
+        payload: newTrack
+    }
+)
+
+export const clearUserTracks = () => (
+    {
+        type: 'clearUserTracks',
     }
 )

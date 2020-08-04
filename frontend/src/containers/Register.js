@@ -31,10 +31,10 @@ const RegisterPage = () => {
   const showLogin = useSelector(state => state.hasUserLoggedIn);
   const dispatch = useDispatch();
 
-  const handleSubmit = e => {
-    e.preventDefault();
+  const handleSubmit = event => {
+    event.preventDefault();
     if (equal && username){
-      e.target.className += " was-validated";
+      event.target.className += " was-validated";
     }
     if (password != passwordConfirm){
       alert('Password entered is different from confirmation!')
@@ -105,7 +105,7 @@ const RegisterPage = () => {
                           name='username'
                           label="Username"
                           icon="user"
-                          onChange={(e) => setUser(e.target.value)}
+                          onChange={(event) => setUser(event.target.value)}
                         />
                         <MDBInput
                           className="form-control"
@@ -114,7 +114,7 @@ const RegisterPage = () => {
                           name='password'
                           icon="lock"
                           type="password"
-                          onChange={(e) => setPassword(e.target.value)}
+                          onChange={(event) => setPassword(event.target.value)}
                         />
                         <MDBInput
                           className="form-control"
@@ -123,8 +123,8 @@ const RegisterPage = () => {
                           label="Confirm password"
                           icon="lock"
                           type="password"
-                          onChange={(e) => {
-                            setPasswordConfirm(e.target.value)
+                          onChange={(event) => {
+                            setPasswordConfirm(event.target.value)
                             if (password !== passwordConfirm){
                               setEqual(false)
                             }

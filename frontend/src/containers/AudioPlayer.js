@@ -1,6 +1,7 @@
-import React, { useState, useCallback, createElement } from 'react';
+import React, { useState, useCallback, createElement, setRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
 import WaveformPlaylist from 'waveform-playlist';
+import { addUserTrack, clearUserTracks } from '../actions/actions.js'
 
 import '../components/styles/AudioPlayer.css'
 import '../components/styles/App.css';
@@ -8,17 +9,26 @@ import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup'
+import { store } from '../store/index.js';
 
 
 const AudioPlayer = (theme) => {
 
-    var [ee, makeEE] = useState(null);
+    // These are all hooks; They're basically variables that cause re-renders on change
+    var [eventEmitter, setEventEmitter] = useState(null);
     var [playlist, setPlaylist] = useState(null);
     var [audioData, set] = useState({})
     var [downloadRequest, downloaded] = useState(false)
     var [downloadLink, makeLink] = useState(null);
     var [paused, pauser] = useState(true);
     var [format, setFormat] = useState("hh:mm:ss");
+    const [, updateState] = React.useState();
+    const forceUpdate = React.useCallback(() => updateState({}), []);
+    
+    // Get already loaded usertracks; Reload them back on a page refresh
+    const userTracks = useSelector(state => state.userTracks)
+
+    const dispatch = useDispatch();
 
     var startTime = 0;
     var endTime = 0;
@@ -27,6 +37,7 @@ const AudioPlayer = (theme) => {
     var isLooping = false;
     var playoutPromises;
 
+    // For the playback time format
     const timeFormatter = (format) => {
         const makeFormat = (seconds, decimals) => {
             var hours, minutes, secs, result;
@@ -63,6 +74,7 @@ const AudioPlayer = (theme) => {
         return formats[format];
         }
 
+    // To create download link for edited song
     const displayDownloadLink = (link) => {
         console.log(link)
         var dateString = (new Date()).toISOString();
@@ -75,13 +87,12 @@ const AudioPlayer = (theme) => {
             'text': 'Download mix ' + dateString,
             'className': 'fa fa-download',
             'href': link,
-            'download': 'waveformplaylist' + dateString + '.wav'
+            'download': 'NeuralMoosic' + dateString + '.wav'
             }));
         makeLink(Link);
         }
 
     const updateSelect = (start, end, trimaudionode, loopnode, audioStart, audioEnd, format) => {
-        
         if (start < end) {
             trimaudionode.classList.remove('disabled');
             loopnode.classList.remove('disabled');
@@ -102,25 +113,50 @@ const AudioPlayer = (theme) => {
         audioposnode.innerHTML = timeFormatter(format)(time)
         audioPos = time;
     }
-
+    
+    // Send request containing uploaded song to backend
     const uploadFile = (file) => {
-
-        var request = new FormData()
-        request.append('file', file)
-        fetch('http://localhost:5000/upload', {
-          method: 'POST',
-          body: request,
-          credentials: 'include'
+        return new Promise(function(resolve, reject) {
+            var request = new FormData()
+            request.append('file', file)
+            fetch('http://localhost:5000/upload', {
+                method: 'POST',
+                body: request,
+                credentials: 'include',
+            }
+            ).then((response) => response.json().then((responseJSON)=>{
+                var response = responseJSON
+                var newTrack = []
+                newTrack.push(response['body'])
+                dispatch(addUserTrack(newTrack))
+                resolve()
+            })).catch(() => {})
         })
-        .then(() => {})
-        .catch(() => {})
-      }
+    }
 
+    const loadUserSongs = () => {
+        return new Promise(function(resolve, reject) {
+        var request = new FormData()
+        fetch('http://localhost:5000/load', {
+            method: 'POST',
+            body: request,
+            credentials: 'include',
+        }
+        ).then((response) => {response.json().then((responseJSON)=>{
+            var response = responseJSON
+            console.log(response['body'])
+            eventEmitter.emit('Clear')
+            for (var track of response['body']){
+                dispatch(addUserTrack(track))
+            }
+            resolve()
+          })}).catch(() => {})
+        })
+    }
 
     const containerRendered = useCallback(container => {
-        //setRef(container);
         if(container !== null){
-            //console.log(document.getElementById("hellothere"), "Hi");
+
             const playlist = WaveformPlaylist({
                 samplesPerPixel: 2048,
                 waveHeight: 125,
@@ -137,17 +173,17 @@ const AudioPlayer = (theme) => {
                     width: 200 
                 },
                 seekStyle : 'line',
-                zoomLevels: [128, 256, 512, 1024, 2048, 4096]
+                zoomLevels: [16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
             });
-
+            /*
             playlist.load([
                 {
-                   "src": './uploadSongs/lead.wav',
+                   "src": 'http://localhost:5000/myMusic',
                    "name": 'Lead',
                    "waveOutlineColor": '#c0dce0',
                    "customClass": "vocals",
                 }
-            ])
+            ])*/
             playlist.load([
                 {
                     "src": './generatedMusic/backingtrack.mp3',
@@ -155,7 +191,7 @@ const AudioPlayer = (theme) => {
                     "waveOutlineColor": '#c0dce0',
                     "gain": 0.5
                   }
-            ])
+            ]) // Has to be changed to backend
 
             //var body = container.parentNode.parentNode.parentNode.parentNode            
             var audioStart = document.getElementsByClassName('audio-start')[0]
@@ -171,8 +207,6 @@ const AudioPlayer = (theme) => {
                  'trimaudionode': trimaudionode, 
                 })
 
-            ee = playlist.getEventEmitter()
-            
             const updateselect = (start, end) => {
                 var format = document.getElementsByClassName('time-format')[0].value
                 updateSelect(start, end, trimaudionode, loopnode, audioStart, audioEnd, format);
@@ -182,10 +216,11 @@ const AudioPlayer = (theme) => {
                 updateTime(time, audioposnode, format)
             }
 
-            ee.on("select", updateselect);
-            ee.on("timeupdate", updatetime);
-            ee.on("stop", pauser)
-            ee.on('audiorenderingfinished', (type, data) => {
+            eventEmitter = playlist.getEventEmitter()
+            eventEmitter.on("select", updateselect);
+            eventEmitter.on("timeupdate", updatetime);
+            eventEmitter.on("stop", pauser)
+            eventEmitter.on('audiorenderingfinished', (type, data) => {
                 if (type == 'wav'){
                     if (downloadUrl) {
                         window.URL.revokeObjectURL(downloadUrl);
@@ -196,7 +231,7 @@ const AudioPlayer = (theme) => {
                     downloaded(true);
                 }
             });
-            ee.on('finished', () => {
+            eventEmitter.on('finished', () => {
                 if (isLooping) {
                   playoutPromises.then(() => {
                     playoutPromises = playlist.play(startTime, endTime);
@@ -204,16 +239,34 @@ const AudioPlayer = (theme) => {
                 pauser(true)
                 }
               });
+            eventEmitter.on('addUploadedTrack', () => {
+                var usertracks = store.getState().userTracks
+                var track = usertracks[usertracks.length - 1]
+                playlist.load(track)
+            })
+            eventEmitter.on('addTrack', (track) => {
+                playlist.load(track)
+            })
+            eventEmitter.on('Clear', () => {
+                dispatch(clearUserTracks())
+                eventEmitter.emit('clear')
+            })
 
-            makeEE(ee);  
+            setEventEmitter(eventEmitter);  
 
-            playlist.load([]).then(function() {
-                playlist.initExporter();
-            }).finally(() => {
-                setPlaylist(playlist);
-                updateSelect(startTime, endTime, trimaudionode, loopnode, audioStart, audioEnd, format)
-                updateTime(audioPos, audioposnode, format)
-            });
+            var usersTracks = store.getState().userTracks
+            console.log('Tracks are:', ...usersTracks)
+            for (var track of usersTracks){
+                playlist.load(track).then(function() {
+                    playlist.initExporter();
+                }).finally(() => {
+                    setPlaylist(playlist);
+                    updateSelect(startTime, endTime, trimaudionode, loopnode, audioStart, audioEnd, format)
+                    updateTime(audioPos, audioposnode, format)
+                    //eventEmitter.emit('Clear')
+                });
+            }
+
         }
     }, []);
 
@@ -238,8 +291,8 @@ const AudioPlayer = (theme) => {
                             className="btn-cursor"
                             title="select cursor"
                             value={1}
-                            onClick = {(e) => {
-                                ee.emit("statechange", "cursor");
+                            onClick = {(event) => {
+                                eventEmitter.emit("statechange", "cursor");
                             }} >
                             <i className="fa fa-headphones"/>
                             </ToggleButton>
@@ -249,9 +302,9 @@ const AudioPlayer = (theme) => {
                             className="btn-select"
                             title="select audio region"
                             
-                            onClick = {(e) => {
-                                ee.emit("statechange", "select");
-                                ee.emit("pause");
+                            onClick = {(event) => {
+                                eventEmitter.emit("statechange", "select");
+                                eventEmitter.emit("pause");
                                 pauser(true);
                             }}
                             >
@@ -262,33 +315,33 @@ const AudioPlayer = (theme) => {
                             variant={theme.buttontheme}
                             className="btn-shift"
                             title="shift audio in time"
-                            onClick = {(e) => {
-                                ee.emit("statechange", "shift");
+                            onClick = {(event) => {
+                                eventEmitter.emit("statechange", "shift");
                             }}
                             >
-                            <i className="fa fa-arrows-h" />
+                            <i className="fa fa-arrows-alt-h" />
                             </ToggleButton>
                             <ToggleButton
                             value={4}
                             variant={theme.buttontheme}
                             className="btn-fadein"
                             title="set audio fade in"
-                            onClick = {(e) => {
-                                ee.emit("statechange", "fadein");
+                            onClick = {(event) => {
+                                eventEmitter.emit("statechange", "fadein");
                             }}
                             >
-                            <i className="fa fa-long-arrow-right" />
+                            <i className="fa fa-arrow-right" />
                             </ToggleButton>
                             <ToggleButton
                             value={5}
                             variant={theme.buttontheme}
                             className="btn-fadeout"
                             title="set audio fade out"
-                            onClick = {(e) => {
-                                ee.emit("statechange", "fadeout");
+                            onClick = {(event) => {
+                                eventEmitter.emit("statechange", "fadeout");
                             }}
                             >
-                            <i className="fa fa-long-arrow-left" />
+                            <i className="fa fa-arrow-left" />
                             </ToggleButton>
                         </ToggleButtonGroup>
                         <ToggleButtonGroup defaultValue= {1} type='radio' name='fadetype' className="btn-group btn-fade-state-group" style = {{marginLeft:'10px'}}>
@@ -297,7 +350,7 @@ const AudioPlayer = (theme) => {
                             value={1}
                             variant={theme.buttontheme}
                             className="btn-logarithmic"
-                            onClick = {e => ee.emit("fadetype", "logarithmic")}>
+                            onClick = {event => eventEmitter.emit("fadetype", "logarithmic")}>
                                 logarithmic
                             </ToggleButton>
                             <ToggleButton
@@ -305,14 +358,14 @@ const AudioPlayer = (theme) => {
                             value={2}
                             variant={theme.buttontheme}
                             className="btn-linear"
-                            onClick = {e => ee.emit("fadetype", "linear")}>
+                            onClick = {event => eventEmitter.emit("fadetype", "linear")}>
                             linear</ToggleButton>
                             <ToggleButton
                             type='checkbox'
                             value={3}
                             variant={theme.buttontheme}
                             className="btn-exponential"
-                            onClick = {e => ee.emit("fadetype", "exponential")}>
+                            onClick = {event => eventEmitter.emit("fadetype", "exponential")}>
                             exponential
                             </ToggleButton>
                             <ToggleButton
@@ -320,7 +373,7 @@ const AudioPlayer = (theme) => {
                             value={4}
                             variant={theme.buttontheme}
                             className="btn-scurve"
-                            onClick = {e => ee.emit("fadetype", "sCurve")}>
+                            onClick = {event => eventEmitter.emit("fadetype", "sCurve")}>
                             s-curve</ToggleButton>
                         </ToggleButtonGroup>
                         <ToggleButtonGroup type='radio' name='zoom' className="btn-group" style = {{marginLeft:'7em'}}>
@@ -329,14 +382,14 @@ const AudioPlayer = (theme) => {
 
                                 variant={theme.buttontheme}
                                 title="zoom in" className="btn-zoom-in"
-                                onClick = {() =>{ee.emit("zoomin");}}>    
+                                onClick = {() =>{eventEmitter.emit("zoomin");}}>    
                                 <i className="fa fa-search-plus" />
                             </ToggleButton>
                             <ToggleButton
                             type='checkbox'
                             variant={theme.buttontheme}
                                 title="zoom out" className="btn-zoom-out"
-                                onClick = {() =>{ee.emit("zoomout");}}>
+                                onClick = {() =>{eventEmitter.emit("zoomout");}}>
                                 <i className="fa fa-search-minus" />
                             </ToggleButton>
                         </ToggleButtonGroup>
@@ -345,30 +398,30 @@ const AudioPlayer = (theme) => {
                          <ButtonGroup  style = {{marginLeft:'22em', marginTop: '-2em'}}>
                             {!paused &&<span className="btn-pause btn btn-warning" 
                                     onClick = {() =>{isLooping = false;
-                                        ee.emit("pause");
+                                        eventEmitter.emit("pause");
                                         pauser(true);}}>
                             <i className="fa fa-pause" />
                             </span>}
                             {paused && <span className="btn-play btn btn-success" 
-                                    onClick = {() =>{ee.emit("play");
+                                    onClick = {() =>{eventEmitter.emit("play");
                                     console.log(playlist.tracks[0])
                                                 pauser(false)}}>
                             <i className="fa fa-play" />
                             </span>}
                             <span className="btn-stop btn btn-danger"
                                     onClick = {() =>{isLooping = false;
-                                        ee.emit("stop");
+                                        eventEmitter.emit("stop");
                                         pauser(true);}}>
                             <i className="fa fa-stop" />
                             </span>
                             <span className="btn-rewind btn btn-success"
                                     onClick = {() =>{isLooping = false;
-                                        ee.emit("rewind");}}>
+                                        eventEmitter.emit("rewind");}}>
                             <i className="fa fa-fast-backward" />
                             </span>
                             <span className="btn-fast-forward btn btn-success"
                                     onClick = {() =>{isLooping = false;
-                                        ee.emit("fastforward");}}>                
+                                        eventEmitter.emit("fastforward");}}>                
                             <i className="fa fa-fast-forward" />
                             </span>
                         </ButtonGroup>
@@ -379,12 +432,12 @@ const AudioPlayer = (theme) => {
                             onClick={()=>{isLooping = true;
                                 playoutPromises = playlist.play(startTime, endTime);}}
                             >
-                            <i className = 'fa fa-repeat'/>
+                            <i className = 'fa fa-sync-alt'/>
                             </span>
                             <span
                             title="keep only the selected audio region for a track"
                             className="btn-trim-audio btn btn-primary disabled"
-                            onClick = {() =>{ee.emit("trim");}}>
+                            onClick = {() =>{eventEmitter.emit("trim");}}>
                             Trim
                             </span>
                         </ButtonGroup>
@@ -400,7 +453,7 @@ const AudioPlayer = (theme) => {
                             title="Clear the playlist's tracks"
                             className="btn btn-clear btn-danger"
                             onClick = {() =>{isLooping = false;
-                                ee.emit("clear");
+                                eventEmitter.emit("Clear");
                                 updateSelect(0, 0, audioData['trimaudionode'], audioData['loopnode'],
                                             audioData['audioStart'], audioData['audioEnd'], format);
                                 updateTime(0, audioData['audioposnode'], format);
@@ -414,11 +467,25 @@ const AudioPlayer = (theme) => {
                             {!downloadRequest && <span
                             title="Prepare current file for downloading"
                             className="btn btn-download btn-primary"
-                            onClick = {() => ee.emit('startaudiorendering', 'wav')}
+                            onClick = {() => eventEmitter.emit('startaudiorendering', 'wav')}
                             >
                             Prepare
                             </span>}
                             {downloadRequest && downloadLink}
+                            <span
+                            title="Load your songs"
+                            className="btn blue-gradient"
+                            onClick = {() =>{
+                                loadUserSongs().then(()=> {
+                                    console.log('hello')
+                                    var usertracks = store.getState().userTracks
+                                    for (var track of userTracks){
+                                        eventEmitter.emit('addTrack', track)
+                                    }
+                                })
+                            }}>
+                            Load your tracks! {/*(Right now, all are loaded. We need a way to load based on user choice.)*/}
+                            </span>
                         </ButtonGroup>
                         </div>
                     </div>
@@ -426,9 +493,9 @@ const AudioPlayer = (theme) => {
                     <div className="playlist-bottom-bar">
                         <form className="form-inline">
                         <select className="time-format form-control" style = {{marginLeft:'-80px'}}
-                            onChange = {(e) => {
-                                var format = e.target.value
-                                ee.emit("durationformat", format);
+                            onChange = {(event) => {
+                                var format = event.target.value
+                                eventEmitter.emit("durationformat", format);
                                 setFormat(format);
                                 updateSelect(startTime, endTime, audioData['trimaudionode'], audioData['loopnode'],
                                             audioData['audioStart'], audioData['audioEnd'], format);
@@ -465,15 +532,15 @@ const AudioPlayer = (theme) => {
                             max={100}
                             defaultValue={100}
                             id="master-gain"
-                            onInput = {(e) => {
-                                ee.emit("mastervolumechange", e.target.value);
+                            onInput = {(event) => {
+                                eventEmitter.emit("mastervolumechange", event.target.value);
                             }}
                             />
                         </div>
                         <div className="checkbox" style = {{marginLeft:'1em'}}>
                             <p style={{marginTop:'1em'}}>
                             <input type="checkbox" className="automatic-scroll"
-                                onChange = {(e) => ee.emit("automaticscroll", e.target.checked)}
+                                onChange = {(event) => eventEmitter.emit("automaticscroll", event.target.checked)}
                             />{" "}
                             Automatic Scroll
                             </p>
@@ -492,30 +559,30 @@ const AudioPlayer = (theme) => {
                             />
                             <Button className="btn-seektotime"
                                 variant='secondary'
-                                onClick = {(e)=>{
-                                    var time = parseInt(e.target.previousSibling.value, 10);
-                                    ee.emit('select', time, time);
+                                onClick = {(event)=>{
+                                    var time = parseInt(event.target.previousSibling.value, 10);
+                                    eventEmitter.emit('select', time, time);
                                 }}>Seek!</Button>
                         </div>
                         </form>
                         <div className="sound-status" />
                         <div className="track-drop"  
-                                onDragEnter = {(e) => {
-                                    e.preventDefault();
-                                    e.target.classList.add("drag-enter");
+                                onDragEnter = {(event) => {
+                                    event.preventDefault();
+                                    event.target.classList.add("drag-enter");
                                 }}
-                                onDragOver = {(e) => e.preventDefault()} 
-                                onDragLeave = {(e) => {
-                                    e.preventDefault();
-                                    e.target.classList.remove("drag-enter");
+                                onDragOver = {(event) => event.preventDefault()} 
+                                onDragLeave = {(event) => {
+                                    event.preventDefault();
+                                    event.target.classList.remove("drag-enter");
                                 }}
-                                onDrop = {(e) => {
-                                    e.preventDefault();
-                                    console.log(e.dataTransfer.files)
-                                    e.target.classList.remove("drag-enter");
-                                    for (var i = 0; i < e.dataTransfer.files.length; i++) {
-                                        ee.emit("newtrack", e.dataTransfer.files[i]);
-                                        uploadFile(e.dataTransfer.files[i])
+                                onDrop = {(event) => {
+                                    event.preventDefault();
+                                    event.target.classList.remove("drag-enter");
+                                    for (var i = 0; i < event.dataTransfer.files.length; i++) {
+                                        //eventEmitter.emit("newtrack", event.dataTransfer.files[i]);
+                                        uploadFile(event.dataTransfer.files[i]).then(()=>{
+                                            eventEmitter.emit('addUploadedTrack')})
                                     }
                                 }}   
                         />

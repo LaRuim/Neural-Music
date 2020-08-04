@@ -1,5 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {createStore,combineReducers } from 'redux';
 import reducers from '../reducers/reducers.js';
+import { loadState } from './localStorage.js';
 
-export const store = createStore(reducers)
+const persistedState = loadState()
+export const store = createStore(reducers, persistedState)

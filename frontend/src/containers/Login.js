@@ -26,8 +26,8 @@ const LoginPage = () => {
   const hasUserLoggedIn = useSelector(state => state.hasUserLoggedIn);
   const dispatch = useDispatch();
 
-  const handleSubmit = e => {
-    e.preventDefault();
+  const handleSubmit = event => {
+    event.preventDefault();
     
     var request = new FormData();
     request.append("username", username);
@@ -81,7 +81,7 @@ const LoginPage = () => {
                           className="white-text"
                           iconClass="white-text"
                           name='username'
-                          onChange={(e) => setUser(e.target.value)}
+                          onChange={(event) => setUser(event.target.value)}
                           label="Username"
                           icon="user"
                         />
@@ -89,7 +89,7 @@ const LoginPage = () => {
                           className="white-text"
                           iconClass="white-text"
                           name='password'
-                          onChange={(e) => setPassword(e.target.value)}
+                          onChange={(event) => setPassword(event.target.value)}
                           label="Password"
                           icon="lock"
                           type="password"

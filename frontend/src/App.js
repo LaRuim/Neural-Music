@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import LoginPage from './containers/Login'
 import RegisterPage from './containers/Register'
 import AudioPlayer from './containers/AudioPlayer'
-import GenMusic from './containers/GenMusic'
 import ProfilePage from './containers/ProfilePage'
 import Generate from './containers/Generate'
 
@@ -24,6 +23,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './components/styles/App.css';
 import { lightTheme, darkTheme } from './components/styles/theme'
 import { ThemeProvider } from 'styled-components';
+import ButtonGroup from 'react-bootstrap/ButtonGroup'
 
 import { BrowserRouter as Router } from "react-router-dom";
 import {
@@ -43,7 +43,6 @@ const App = () => {
   const hasUserLoggedIn = useSelector(state => state.hasUserLoggedIn); // This is analogous to mapstatetoprops
   const showLogin = useSelector(state => state.showLogin);  
   const playeropen = useSelector(state => state.playeropen)
-  const generateopen = useSelector(state => state.generateopen);
   const profilepageopen = useSelector(state => state.profilepageopen)
 
   const dispatch = useDispatch(); // Analogous to mapstatetodispatch
@@ -51,14 +50,14 @@ const App = () => {
 
   const [theme, themeToggler] = useDarkMode();
   const themeMode = theme === 'light' ? lightTheme : darkTheme;
-  const [showGen, setshowGen] = useState(false);
+  const [showAccompanimentModal, setAccompanimentModal] = useState(false);
   
   const Generator = () => {
     return (
       <>
         <Generate
-          show={showGen}
-          onHide={() => setshowGen(false)}
+          show={showAccompanimentModal}
+          onHide={() => setAccompanimentModal(false)}
           />
       </>
     )
@@ -68,7 +67,6 @@ const App = () => {
   const login = LoginPage();
   const register = RegisterPage(); 
   const player = AudioPlayer(themeMode);
-  const genmusic = GenMusic()
   const profilepage = ProfilePage(theme, themeToggler);
   const Overlay = () => {
     return(
@@ -125,20 +123,7 @@ const App = () => {
   }
 
   else{ 
-
-    var checked;
-    fetch('http://localhost:5000/userdetails', {
-      method: 'GET',
-      credentials: 'include'
-    }).then(response => response.json()).then(responseJSON => {
-      if (responseJSON['status'] == 200){
-        checked = responseJSON['darkmode'] === 'False'
-      }
-      else{
-        console.log(responseJSON);
-      }
-    })
-
+          
     return(
       <div id='app'>
       <ThemeProvider theme={themeMode}>
@@ -163,34 +148,22 @@ const App = () => {
             <Menu open={open} setOpen={setOpen} />
             {playeropen && <nav>
               <nav style={{marginLeft: '30em', marginTop: '30px'}}>
-                <p>This page allows you to use a feature filled Audio Player.
+                <p>This page allows you to use a feature filled Audio Editor.
                 Drag and drop your audio file into the box to play around with it and edit it.
                 </p>
-                <p>
-                  If you require an accompaniment to the piece you just dropped, 
-                  <a style={{color: themeMode.linkcolor}} href onClick = {()=>setshowGen(true)}> click here.</a>
-                </p>
+                <ButtonGroup className="btn-select-state-group">
+                    <span
+                    className="btn btn-success"
+                    title="Generate an accompaniment"
+                    onClick = {()=>setAccompanimentModal(true)}>
+                    <i>Generate accompaniment</i>
+                    </span>
+                </ButtonGroup>
               </nav>
             </nav>
             }
 
-            {showGen && generateAccompaniment}
-
-            {generateopen && <nav>
-              <nav style={{marginLeft: '300px', marginTop: '30px'}}>
-                <p>This page allows you to generate music via the trained model we possess. The model itself has been
-                  trained on a set of 247 midi files, each from an OST or a composition by itself.
-                </p>
-                <p>
-                  To initialize the generation, click on the 'Generate' Button. 
-                </p>
-                
-                <p>
-                  Please be patient while our model generates the song for you, and converts it to an mp3.  
-                </p>
-              </nav>
-            </nav>
-            }
+            {showAccompanimentModal && generateAccompaniment}
             
             {profilepageopen && <nav>
               <nav style={{marginLeft: '300px', marginTop: '30px'}}>
@@ -200,7 +173,6 @@ const App = () => {
               }
             <nav className='myNav' style={{marginLeft: '10em'}}>
               {playeropen && player}
-              {generateopen && genmusic}
               {profilepageopen && profilepage}
             </nav>
           </nav>

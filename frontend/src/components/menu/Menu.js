@@ -14,8 +14,7 @@ const Menu = ({ open }) => {
       <hr></hr>
       <a onClick = {() => dispatch(actions.openProfile(true))}>My Profile</a>
       <hr style={{height:'2px', color: 'gray'}}></hr>
-      <a  onClick = {() => dispatch(actions.openPlayer(true))}>Audio Player</a>
-      <a  onClick = {() => dispatch(actions.openGen(true))}>Generate Music</a>
+      <a  onClick = {() => dispatch(actions.openPlayer(true))}>Audio Editor</a>
       <a>About us</a>
     </StyledMenu>
   )
