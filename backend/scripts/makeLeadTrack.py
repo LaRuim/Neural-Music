@@ -13,8 +13,8 @@ from converter import MIDI_to_mp3
 """parser = argparse.ArgumentParser(description='Generator')
 parser.add_argument('-f', type=str, help="Output file's name WITHOUT extension. If none specified, defaults to 'output'")
 args = parser.parse_args()
-filename = args.f
-if filename is None:"""
+fileName = args.f
+if fileName is None:"""
 
 def prepare_sequences(notes, pitchnames, n_vocab):
     #Prepare the sequences used by the Neural Network
@@ -65,6 +65,7 @@ def create_network(network_input, n_vocab, mode):
     model.compile(loss='categorical_crossentropy', optimizer='adam')
 
     # Load the weights to each node
+    # mode means major/minor
     model.load_weights(f'./data/{mode}/{progression}/weights.hdf5')
 
     return model
@@ -128,15 +129,15 @@ def create_midi(prediction_output, BPM=120, offset=0, cycles=2):
         #offset += 0.5
 
     midi_stream = stream.Stream(output_notes)
-    midi_stream.write('midi', fp=f'./converted/{filename}.mid')
+    midi_stream.write('midi', fp=f'./converted/{fileName}.mid')
 
-def make(filename, mode, progression, notes=500, BPM=120, offset=0, cycles=2):
+def make(fileName, scale, notes=500, progression='C major', BPM=120, offset=0, cycles=2):
     # Generate a piano midi file
     #load the notes used to train the model
     PATH_TO_NOTES = f'./data/notes'
     with open(PATH_TO_NOTES, 'rb') as filepath:
         notes = pickle.load(filepath)
-
+    mode = scale.split()[-1]
     # Get all pitch names
     pitchnames = sorted(set(item for item in notes))
     # Get all pitch names
@@ -146,5 +147,5 @@ def make(filename, mode, progression, notes=500, BPM=120, offset=0, cycles=2):
     model = create_network(normalized_input, n_vocab, mode, progression)
     prediction_output = generate_notes(model, network_input, pitchnames, n_vocab, notes)
     create_midi(prediction_output, BPM=BPM, offset=offset, cycles=cycles)
-    MIDI_to_mp3(f'./converted/{filename}', outFileName=filename)
-    #return filename
+    MIDI_to_mp3(f'./converted/{fileName}', outfileName=fileName)
+    #return fileName

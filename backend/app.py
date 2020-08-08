@@ -114,7 +114,7 @@ def generate():
             fileID += 1
             mongo.db.temp.update_one({'_id': IDName}, {'$set':{'uploadFileID':fileID}}) 
 
-            makeLeadTrack.make(fileName=fileName, notes=notes, progression=chordProgression, BPM=BPM, offset=offset, cycles=cycles)
+            makeLeadTrack.make(fileName=fileName, scale=scale, notes=notes, progression=chordProgression, BPM=BPM, offset=offset, cycles=cycles)
 
         elif request.form.get('generate') == 'Backing':
             leadPath = request.form.get('path')

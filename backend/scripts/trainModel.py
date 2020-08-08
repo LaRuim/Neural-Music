@@ -8,7 +8,7 @@ from keras.layers import BatchNormalization as BatchNorm
 from keras.utils import np_utils
 from keras.callbacks import ModelCheckpoint
 
-PATH = "./trainset/Pokemon"
+PATH = "./trainset/Pokemon"  #make this command line or something
 PATH = PATH + "/*.mid"
 def get_notes():
     """ Get all the notes and chords from the midi files in the ./midi_songs directory """
@@ -102,7 +102,9 @@ batchsize = 128  #128
 
 def train(model, network_input, network_output):
     """ train the neural network """
-    filepath = "./data/weights-improvement.hdf5"
+    #change to reflect multiple weight files for different progressions; take progression name, and major/minor as input somehow (parameter or command line)
+    #path should look like: ./data/weights/majororminor/whateverprogression/weights.hdf5
+    filepath = "./data/weights-improvement.hdf5" 
     checkpoint = ModelCheckpoint(
         filepath,
         monitor='loss',
@@ -120,11 +122,8 @@ def train_network():
 
     # get amount of pitch names
     n_vocab = len(set(notes))
-
     network_input, network_output = prepare_sequences(notes, n_vocab)
-
     model = create_network(network_input, n_vocab)
-
     train(model, network_input, network_output)
 
 train_network()
