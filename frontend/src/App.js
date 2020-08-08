@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import LoginPage from './containers/Login'
 import RegisterPage from './containers/Register'
-import AudioPlayer from './containers/AudioPlayer'
+import AudioPlayer from './containers/AudioEditor'
 import ProfilePage from './containers/ProfilePage'
 import Generate from './containers/Generate'
 

@@ -6,6 +6,7 @@ from converter import MIDI_to_mp3
 from filterMIDI import filterMIDI
 import log
 
+
 def getNotes(chord):
     notes = []
     for note in chord:
@@ -16,7 +17,8 @@ def getNotes(chord):
             notes.append('.'.join(str(n) for n in note.normalOrder))'''
     return notes
 
-def chordObjects_to_listsOfNotes(songChords):
+
+def makeListsOfNotes(songChords):
     humanChords = []
     for chord in songChords:
         humanChords.append(getNotes(chord))
@@ -31,47 +33,66 @@ def chordObjects_to_listsOfNotes(songChords):
 
 def randomizeChord(chord, timeSignature):
     sequence = []
+    for _ in range(3):
+        chord = chord + chord
+    chord.append(music.note.Rest())
     for _ in range(timeSignature):
         try:
             sequence.append(chord[random.randint(0, len(chord)-1)])
         except:
+            print('what', chord)
             pass
     return sequence
 
-def makeBackingTrack(chordData, listOfChordObjects, timeSignature, BPM, measureDurations, offset):
+
+def makeBackingTrack(chordData, listOfChordObjects, timeSignature, BPM, measureDurations, offset, cycles=2, arpeggio=False, outFileName='Backing Track'):
     backingTrackChords = []
     for chordObject in listOfChordObjects:
-        backingTrackChords.append(chordData[str(chordObject)[21:-1]])
-    randomizedChords = []
+        chordNotes = ' '.join(list(note.name for note in chordObject.notes))
+        backingTrackChords.append(chordData[chordNotes])
+    outputChords = []
     for chord in backingTrackChords:
-        randomizedChords.append(randomizeChord(chord, timeSignature))
+        if arpeggio:
+            print(randomizeChord(chord, timeSignature))
+            outputChords.append(randomizeChord(chord, timeSignature))
+        else:
+            chordWithNoteNames = set([note.name for note in chord])
+            chord = list(music.note.Note(note) for note in chordWithNoteNames)
+            rootNote = music.note.Note(music.chord.Chord(chord).root().name)
+            if len(chord) < 4:
+                rootNote.octave = 2
+                chord.append(rootNote)
+            outputChords.append(chord)
     Offset = 0.0
-    output_notes = []
-    for chord in randomizedChords:
-        for note in chord:
-            outNote = deepcopy(note)
-            outNote.offset = Offset
-            outNote.storedInstrument = music.instrument.Piano()
-            output_notes.append(outNote)
-            #Offset+=60/BPM
-        #Offset+=240/BPM
-        #Offset+=(measureDurations[randomizedChords.index(chord)]*120)/BPM
-        if offset == 0:
-            offset = (measureDurations[randomizedChords.index(chord)]*120)/BPM
-        Offset += offset
-    midi_stream = music.stream.Stream(output_notes)
-    midi_stream.write('midi', fp='../frontend/public/generatedMusic/backingtrack.mid')
-    MIDI_to_mp3('../frontend/public/generatedMusic/backingtrack', 'backingtrack')
+    outputNotes = []
+    for chord in outputChords:
+        if not offset:
+            offset = (measureDurations[outputChords.index(chord)]*120)/BPM
+        for _ in range(cycles):
+            for note in chord:
+                outNote = deepcopy(note)
+                outNote.offset = Offset
+                outNote.storedInstrument = music.instrument.Piano()
+                outNote.octave = 3
+                outputNotes.append(outNote)
+                if arpeggio:
+                    Offset += offset/(cycles*timeSignature)
+            if arpeggio:
+                chord = randomizeChord(chord, timeSignature)
+            if not arpeggio:
+                Offset += offset/cycles
 
-def make(BPM=120, offset=0):
-    PATH = '../frontend/public/uploadSongs/lead.mid'
-    MIDI = song.getMIDI(PATH)
+    music.stream.Stream(outputNotes).write('midi', fp='./converted/backingtrack.mid')
+    MIDI_to_mp3('./converted/backingtrack', outFileName)
+
+
+def make(leadPath, outFileName='Backing Track', BPM=120, offset=0, cycles=2, arpeggio=False):
+    MIDI = song.getMIDI(leadPath)
     #BPM = 112
     timeSignatures = song.getTimeSignature(MIDI)
     timeSignature = timeSignatures[0]
 
     notes = song.getFlattenedNotes(MIDI)
-    music.stream.Stream(notes).write('midi', fp='./converted/flattened.mid')
     keyRootNote, keyMode = song.getScale(MIDI)
     #Durations = song.get_duration(MIDI, timeSignatures)
     '''for i in range(len(Durations)):
@@ -87,10 +108,11 @@ def make(BPM=120, offset=0):
         log.write('\n'+ str(len(Durations)))
         log.write('\n'+str(BPM))'''
 
-    for note in notes:
-        note.quarterLength = (round(note.quarterLength * 8))/8 # To make each note nice and even; We might need to remove this
+    #for note in notes:
+    #    note.quarterLength = (round(note.quarterLength * 8))/8 # To make each note nice and even; We might need to remove this
 
     Measures = music.stream.Stream(notes).makeMeasures().makeTies()
+    
     measures = []
     measureDurations = []
     for measure in Measures:
@@ -98,24 +120,26 @@ def make(BPM=120, offset=0):
         for note in measure:
             try:
                 myNotes.append(note.name)
+                #print(note.name, end=' ')
             except:
                 pass
+        #print()
         measures.append(myNotes)
         measureDurations.append(measure.duration.quarterLength)
     Measures.write('midi', fp='./smooth.mid') # For debugging
 
-    allPossibleChordsForScale = song.getChords(keyMode, keyRootNote)
+    allPossibleChordsForScale = song.getAllPossibleTriadsForScale(keyMode, keyRootNote)
     listOfChordObjects = song.getBestChordsForMeasures(measures, allPossibleChordsForScale)
 
-    chordsAsListsOfNotes = chordObjects_to_listsOfNotes(listOfChordObjects)
+    chordsAsListsOfNotes = makeListsOfNotes(listOfChordObjects)
     chordData = {str(listOfChordObjects[x])[21:-1]:chordsAsListsOfNotes[x] for x in range(len(chordsAsListsOfNotes))}
-    makeBackingTrack(chordData, listOfChordObjects, timeSignature, BPM, measureDurations, offset)
+    makeBackingTrack(chordData, listOfChordObjects, timeSignature, BPM, measureDurations, offset, cycles, arpeggio, outFileName)
 
 #make()
 
 '''def beta(BPM=130):
-    PATH = '../../frontend/public/uploadSongs/lead.mid'
-    MIDI = song.getMIDI(PATH)
+    leadPath = '../../frontend/public/uploadSongs/lead.mid'
+    MIDI = song.getMIDI(leadPath)
     #BPM = 112
     timeSignatures = song.getTimeSignature(MIDI)
     timeSignature = timeSignatures[0]

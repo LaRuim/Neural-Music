@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { addUserTrack, clearUserTracks } from '../actions/actions.js'
+import { useSelector, useDispatch } from 'react-redux'
+
+import Tooltip from "@material-ui/core/Tooltip";
 
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup'
@@ -15,19 +19,31 @@ const Generate = (props) => {
     const [offset, setOffset] = useState(0)
     const [chordProgression, setProgression] = useState(null)
     const [scale, setScale] = useState(null)
+    const [cycles, setCycles] = useState(2)
+    const [noteTolerance, setNoteTolerance] = useState(70)
+    const [arpeggio, setArpeggio] = useState(false)
     const onNext = (VAL) => {
         setIndex(VAL);
     }
+    const dispatch = useDispatch();
 
-    const handleReq = (event, RequiredTrackType, TrackPath, BPM, offset) => {
+    const handleReq = (event, RequiredTrackType, TrackPath) => {
         event.preventDefault();
         
         var request = new FormData();
         request.append("generate", RequiredTrackType);
         request.append('path', TrackPath)
         request.append('BPM', BPM)
-        request.append('Offset', offset)
-
+        if (RequiredTrackType == 'Backing'){
+          request.append('Offset', offset)
+          request.append('cycles', cycles)
+          request.append('arpeggio', arpeggio)
+          request.append('minDuration', noteTolerance)
+        }
+        else{
+          request.append('chordProgression', chordProgression)
+          request.append('scale', scale)
+        }
         fetch('http://localhost:5000/generate', {
             method: 'POST',
             body: request,
@@ -35,7 +51,13 @@ const Generate = (props) => {
             }).then(response => {
             console.log(response)
             if (response['status'] == 200){
+              response.json().then((responseJSON) => {
+              var response = responseJSON
+              var newTrack = []
+              newTrack.push(response['body'])
+              dispatch(addUserTrack(newTrack))
               window.location.reload();
+              })
             }
             else{
                 alert('This part is still under development; Need backend code!');
@@ -48,9 +70,10 @@ const Generate = (props) => {
         {...props}
         size="lg"
         aria-labelledby="contained-modal-title-vcenter"
-     
         backdrop="static"
         keyboard={false}
+        animation={true} 
+        className='generator' 
       >
         <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
@@ -82,24 +105,50 @@ const Generate = (props) => {
         {index == 2 && <><Modal.Body>
           <h4 style={{color:'black'}}>Track Details</h4>
           <p style={{color:'black'}}>
-            Choose a BPM and offset.
+            Choose your required parameters.
           </p>
           <div className='text-center'>
             
-            <div className="def-number-input number-input">
-              <div>
-                <h5 style={{color:'black'}}>BPM</h5>
-                <input className="quantity" name="BPM" value={BPM} onChange={(event)=> setBPM(event.target.value)} type="number" />
-              </div>
-              <div>
-                <h5 style={{color:'black'}}>Offset</h5>
-                <input className="quantity" name="offset" value={offset} onChange={(event)=> setOffset(event.target.value)} type="number" step="any"/>
+            <div className="def-number-input number-input small">
+              <Tooltip title="Beats Per Minute of your Lead Track" placement="left">
+                <div style={{display: 'inline-block'}}>
+                  <h5 style={{color:'black', fontSize:'1.25em'}}>BPM</h5>
+                  <input className="quantity" name="BPM" value={BPM} onChange={(event)=> setBPM(event.target.value)} type="number" />
+                </div>
+              </Tooltip>
+              <Tooltip title="Only change if you know what you're doing" placement="top">
+                <div style={{display: 'inline-block', paddingLeft:'2em'}}>
+                    <h5 style={{color:'black', fontSize:'1.25em'}}>Offset per chord</h5>
+                  <input className="quantity" name="offset" value={offset} onChange={(event)=> setOffset(event.target.value)} type="number" step="any"/>
+                </div>
+              </Tooltip>
+              <div style={{display: 'inline-block', paddingLeft:'2em'}}>
+                <h5 style={{color:'black', fontSize:'1.25em'}}>Chord Cycles per measure</h5>
+                <input className="quantity" name="Cycles" value={cycles} onChange={(event)=> setCycles(event.target.value)} type="number" />
               </div> 
+            </div>
+            <br></br>
+            <div className="def-number-input number-input small">
+              <Tooltip title="Number of milliseconds a sound must be present for it to be considered a distinct note" placement="left">
+                <div style={{display: 'inline-block'}}>
+                  <h5 style={{color:'black', fontSize:'1.25em'}}>Note Tolerance (ms)</h5>
+                  <input className="quantity" name="tolerance" value={noteTolerance} onChange={(event)=> setNoteTolerance(event.target.value)} type="number" step="any"/>
+                </div>
+              </Tooltip>
+              <Tooltip title="Whether the chords are played as one chord or in a broken style" placement="right">
+                <div style={{display: 'inline-block', paddingLeft:'2em'}}>
+                  <h5 style={{color:'black', fontSize:'1.25em'}}>Arpeggio?</h5>
+                  <select className="browser-default custom-select-small" onChange={(e)=>setArpeggio(e.target.value)}>
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
+              </Tooltip>
             </div>
                 <Button onClick={(event) => {
                 var tracks = store.getState().userTracks
                 var trackPath = tracks[tracks.length-1][0].src
-                handleReq(event, requiredTrackType, trackPath, BPM, offset)
+                handleReq(event, requiredTrackType, trackPath)
                 onNext(4);
             }} variant='primary'>Generate</Button>
           </div>
@@ -114,18 +163,12 @@ const Generate = (props) => {
             
           <div>
             <select className="browser-default custom-select">
-              <option>Chord Progression:</option>
-              <option value="1">Option 1</option>
-              <option value="2">Option 2</option>
-              <option value="3">Option 3</option>
+              <option value="1564">1-5-6-4</option>
             </select>
           </div>
           <div>
             <select className="browser-default custom-select">
-              <option>Scale</option>
-              <option value="1">Option 1</option>
-              <option value="2">Option 2</option>
-              <option value="3">Option 3</option>
+              <option>C Major</option>
             </select>
           </div>
           <div className="def-number-input number-input">
@@ -137,7 +180,7 @@ const Generate = (props) => {
                 <Button onClick={(event) => {
                 var tracks = store.getState().userTracks
                 var trackPath = tracks[tracks.length-1][0].src
-                handleReq(event, requiredTrackType, trackPath, BPM, offset)
+                handleReq(event, requiredTrackType, trackPath)
                 onNext(4);
             }} variant='primary'>Generate</Button>
           </div>

@@ -1,6 +1,7 @@
 import music21 as music
 from collections import defaultdict
 import log
+import random
 
 def getMIDI(PATH):
     return music.converter.parse(PATH)
@@ -46,13 +47,13 @@ def getFilteredNotes(MIDI, exceptionNotes, TOLERANCE=12): # Unused, and will pro
     inputMIDI = MIDI
     Scale = getScale(MIDI)
     if Scale[1] in ['Minor', 'minor']:
-        scaleNotes = list(x.name for x in music.scale.MinorScale(Scale[0]).getPitches())
+        ScaleNotes = list(x.name for x in music.scale.MinorScale(Scale[0]).getPitches())
     elif Scale[1] in ['Major', 'major']:
-        scaleNotes = list(x.name for x in music.scale.MajorScale(Scale[0]).getPitches())
+        ScaleNotes = list(x.name for x in music.scale.MajorScale(Scale[0]).getPitches())
     else:
         print('Unrecognized Scale.')
         return
-    scaleNotes.extend(exceptionNotes)
+    ScaleNotes.extend(exceptionNotes)
     occurences = defaultdict(lambda: 0)
     if inputMIDI is not None:
         for musicPart in inputMIDI.recurse().parts:
@@ -66,7 +67,7 @@ def getFilteredNotes(MIDI, exceptionNotes, TOLERANCE=12): # Unused, and will pro
                     elif note.name == 'rest':
                         pass
                     elif type(note) == music.note.Note:
-                        if str(note.name) == str(Scale[0]):
+                        if note.name == Scale[0]:
                             occurences[note.pitch.midi] += 1 
                     else:
                         print(f'{note} is an ANOMALY')
@@ -114,7 +115,7 @@ def getFilteredNotes(MIDI, exceptionNotes, TOLERANCE=12): # Unused, and will pro
                         elif note.name == 'rest':
                             pass
                         elif type(note) == music.note.Note:
-                            if str(note.name) == str(Scale[0]):
+                            if note.name == Scale[0]:
                                 occurences[note.pitch.midi] += 1 
                         else:
                             print(f'{note} is an ANOMALY')
@@ -134,7 +135,7 @@ def getFilteredNotes(MIDI, exceptionNotes, TOLERANCE=12): # Unused, and will pro
                     elif note.name == 'rest':
                         pass
                     elif type(note) == music.note.Note:
-                        if note.name not in scaleNotes:
+                        if note.name not in ScaleNotes:
                             print(f'{note} not in scale {Scale[0]} {Scale[1]}')
                             note.volume = 0
                             continue
@@ -157,7 +158,7 @@ def getFilteredNotes(MIDI, exceptionNotes, TOLERANCE=12): # Unused, and will pro
                         elif note.name == 'rest':
                             pass
                         elif type(note) == music.note.Note: 
-                            if note.name not in scaleNotes:
+                            if note.name not in ScaleNotes:
                                 print(f'{note.name} not in scale {Scale[0]} {Scale[1]}')
                                 note.volume = 0
                                 continue
@@ -172,30 +173,30 @@ def getFilteredNotes(MIDI, exceptionNotes, TOLERANCE=12): # Unused, and will pro
 
 # time_signatures = get_timesig(PATH)
 # notes = get_notes(PATH, time_signatures)
-# key_tonic_name, key_mode = getScale(PATH)
+# keyRootNote, keyMode = getScale(PATH)
 # durations = getDurations(PATH, time_signatures)
 # notes=change_notes(notes)
 
 # notes = split_notes(notes, durations, time_signatures)
 
-def getChords(key_mode, key_tonic_name):   
-    if(key_mode=="major"):
-        sc1 = music.scale.MajorScale(key_tonic_name)
+def getAllPossibleTriadsForScale(keyMode, keyRootNote):   
+    if(keyMode == "major"):
+        ScaleNotes = music.scale.MajorScale(keyRootNote)
     else:
-        sc1 = music.scale.MinorScale(key_tonic_name)
-    notelist= []
-    for i in sc1.getPitches():
-        notelist.append(str(i)[:-1])
-    notelist = notelist[:-1]
-    notelist+=notelist
-    chords = [[] for _ in range(7)]
+        ScaleNotes = music.scale.MinorScale(keyRootNote)
+    scaleNotes = []
+    for note in ScaleNotes.getPitches():
+        scaleNotes.append(note.name)
+    scaleNotes = scaleNotes[:-1]
+    scaleNotes += scaleNotes
+    allPossibleTriadsForScale = []
     for i in range(7):
-        chords[i] = [notelist[i+x] for x in range(0, 5, 2)]
-    return chords
+        allPossibleTriadsForScale.append([scaleNotes[i+x] for x in range(0, 6, 2)])
+    return allPossibleTriadsForScale
 
 def getChordsOnly(midi):
     chords = []
-    notes_to_parse = none
+    notes_to_parse = None
     try: # file has instrument parts
         inputMIDI = music.instrument.partitionbyinstrument(midi)
         notes_to_parse = inputMIDI.parts[0].recurse() 
@@ -203,38 +204,70 @@ def getChordsOnly(midi):
         notes_to_parse = midi.flat.notes
     #print(notes_to_parse)
     for element in notes_to_parse:
-        if (isinstance(element , music.chord.chord)):
+        if (isinstance(element, music.chord.Chord)):
             chords.append(element)
     return chords
-# chords_list = getChords(key_mode, key_tonic_name)
+# allPossibleChordsForScale = getAllPossibleTriadsForScale(keyMode, keyRootNote)
 
-def getBestChord(notes, chords_list):
-    notes = set(notes)
-    selectedChord = set()
+def getBestChord(MeasureNotes, allPossibleChordsForScale, previouslySelectedChord):
+    measureNotes = set(MeasureNotes)
+    selectedChords = list()
+    intersectedNotes = dict()
     bestIntersection = 0
-    for i in range(len(chords_list)):
-        chords_list[i] = set(chords_list[i])
-        if(len(notes.intersection(chords_list[i])) > bestIntersection):
-            bestIntersection = len(notes.intersection(chords_list[i]))
-            selectedChord = chords_list[i]
-    if len(selectedChord) == 0:
-        selectedChord = []
-    return music.chord.Chord(selectedChord)
+    for CandidateChord in allPossibleChordsForScale:
+        candidateChord = set(CandidateChord)
+        candidateChord = list(candidateChord)
+        intersectedNotes[' '.join(candidateChord)] = measureNotes.intersection(candidateChord)
+        intersection = len(intersectedNotes[' '.join(candidateChord)])
+        if intersection == bestIntersection:
+            selectedChords.append(candidateChord)
+        elif intersection > bestIntersection:
+            bestIntersection = intersection
+            selectedChords = []
+            selectedChords.append(candidateChord)
+    print(f'Previously selected: {previouslySelectedChord}')
+    if len(selectedChords) > 1:
+        selectedChordsWithoutPreviousChord = [candidateChord for candidateChord in selectedChords if candidateChord != previouslySelectedChord]
+        filteredSelectedChords = []
+        if len(selectedChordsWithoutPreviousChord) > 1:
+            bestCount = 0
+            for candidateChord in selectedChordsWithoutPreviousChord:
+                realIntersectionCountForChord = 0
+                for intersectedNote in intersectedNotes[' '.join(candidateChord)]:
+                    realIntersectionCountForChord += MeasureNotes.count(intersectedNote)
+                if realIntersectionCountForChord == bestCount:
+                    filteredSelectedChords.append(candidateChord)
+                elif realIntersectionCountForChord > bestCount:
+                    bestCount = realIntersectionCountForChord
+                    filteredSelectedChords = []
+                    filteredSelectedChords.append(candidateChord)
+        else:
+            filteredSelectedChords = selectedChordsWithoutPreviousChord
+        intersections = list(len(set(candidateChord).intersection(previouslySelectedChord)) for candidateChord in filteredSelectedChords)
+        selectedChord = filteredSelectedChords[intersections.index(max(intersections))]
+    else:
+        selectedChord = selectedChords[0]
+    print('Candidate Chords:')
+    for chordDebug in selectedChords:
+        print(chordDebug)
+    print('Selected Chord:', selectedChord)
+    print()
+    return selectedChord, music.chord.Chord(selectedChord)
 
-def getBestChordsForMeasures(measures, chords_list):
-    chords_list_final = [[] for _ in measures]
-    for i in range(len(measures)):
-        chords_list_final[i] = getBestChord(measures[i], chords_list)
-    return chords_list_final
+def getBestChordsForMeasures(measures, allPossibleChordsForScale):
+    bestChords = []
+    previouslySelectedChord = set()
+    for measure in measures:
+        bestChord, bestChordObject = getBestChord(measure, allPossibleChordsForScale, previouslySelectedChord)
+        bestChords.append(bestChordObject)
+        previouslySelectedChord = bestChord
+    return bestChords
 
 def getBPM(MIDI):
-    for i in range(0,20):
+    for i in range(0, 20):
         token = str(MIDI.parts[0][i])
         if 'MetronomeMark' in token:
             return float(token[token.index('=')+1:].replace('>',''))
 
      
-
-
-
-# chords_list_object = getBestChordsForMeasures(notes, chords_list)
+# chords_list_object = getBestChordsForMeasures(notes, allPossibleChordsForScale)

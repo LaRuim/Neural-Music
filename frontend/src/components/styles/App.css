@@ -54,3 +54,7 @@ a:hover{
 .img{
   cursor:pointer;
 }
+
+.generator .modal-content {
+  opacity: 0.95;
+}

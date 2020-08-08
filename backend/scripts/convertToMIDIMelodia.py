@@ -3,7 +3,6 @@
 import soundfile
 import resampy
 import vamp
-import argparse
 import os
 import numpy as np
 from midiutil.MidiFile import MIDIFile
@@ -123,7 +122,7 @@ def hz2midi(hz):
     return midi
 
 
-def convertToMIDI(infile, outfile, bpm, smooth=0, minduration=0.1,
+def convertToMIDI(infile, outfile, bpm=120, smooth=0, minduration=0.1,
                           savejams=False):
 
     # define analysis parameters
@@ -180,4 +179,4 @@ def convertToMIDI(infile, outfile, bpm, smooth=0, minduration=0.1,
     print("Conversion complete.")
 
 
-#convertToMIDI('./sg.wav', './sg.mid', 78, smooth=0, minduration=0.06)
+#convertToMIDI('../testSongs/ksg.wav', '../testSongs/ksg.mid', 75, smooth=0, minduration=0.06)

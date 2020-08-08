@@ -11,6 +11,7 @@ import sys
 sys.path.append('./scripts')
 import noiseCancellation
 import makeBackingTrack
+import makeLeadTrack
 import convertToMIDIMelodia
 import convertToMIDIWaon
 import log
@@ -25,7 +26,6 @@ app.config["SECRET_KEY"] = "OCML3BRawWEUeaxcuKHLpw"
 app.secret_key = "OCML3BRawWEUeaxcuKHLpw"
 
 app.config['MONGO_DBNAME'] = 'db'
-
 
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
@@ -85,7 +85,7 @@ def register():
                                   mimetype='application/json')
 
         HASH=generate_password_hash(request.form.get("password"))
-        mongo.db.temp.insert_one({'username': USER, 'hash': HASH, 'darkmode': False, 'fileNo': 1})
+        mongo.db.temp.insert_one({'username': USER, 'hash': HASH, 'darkmode': False, 'uploadFileID': 1, 'leadID': 1})
 
         return app.response_class(response=json.dumps({'body': 'OK'}),
                                   status=200,
@@ -98,25 +98,45 @@ def register():
 @cross_origin(supports_credentials=True)
 def generate():
     if request.method == 'POST':
-        if request.form.get('generate') == 'Lead':
-            pass
-        elif request.form.get('generate') == 'Backing':
-            lead = request.form.get('path')
-            BPM = int(request.form.get('BPM'))
-            offset = float(request.form.get('Offset'))
-            qindex = lead.index('?')+10
-            lead = f'./static/userMusic/{lead[qindex:]}'
+        BPM = float(request.form.get('BPM'))
+        offset = float(request.form.get('Offset'))
+        cycles = int(request.form.get('cycles'))
 
+        if request.form.get('generate') == 'Lead':  
+            chordProgression = request.form.get('chordProgression')
+            scale = request.form.get('scale')
+            notes = request.form.get('notes')
+            userData = mongo.db.temp.find_one({'username':session.get('username')})
+
+            IDName = userData.get('_id')
+            fileID = userData.get('leadID')
+            filename = secure_filename(f'{IDName}:lead_{fileID}')
+            fileID += 1
+            mongo.db.temp.update_one({'_id': IDName}, {'$set':{'uploadFileID':fileID}}) 
+
+            makeLeadTrack.make(fileName=fileName, notes=notes, progression=chordProgression, BPM=BPM, offset=offset, cycles=cycles)
+
+        elif request.form.get('generate') == 'Backing':
+            leadPath = request.form.get('path')
+            arpeggio = True if request.form.get('arpeggio') == 'true' else False
+            minDuration = float(request.form.get('minDuration'))/1000
+
+            qindex = leadPath.index('?')+10
+            fileName = leadPath[qindex:]
+            leadPath = f'./static/userMusic/{fileName}'
+            fileName = fileName[:-4]
+            convertedMIDIPath = f'./static/userMIDIs/{fileName}.mid'
             ''' There are 2 methods to do audio-to-MIDI conversion; Right now, we're going with Melodia '''
-            convertToMIDIMelodia.convertToMIDI(lead, '../frontend/public/uploadSongs/lead.mid', BPM, minduration=0.07) 
-            #convertToMIDIWaon.convertToMIDI(lead, '../frontend/public/uploadSongs/lead.mid')
-            
-            makeBackingTrack.make(BPM, offset)
-        """try:
-            imp.reload(create_midi)
-        except:
-            import create_midi"""
-        return app.response_class(response=json.dumps({'body': 'OK'}),
+
+            convertToMIDIMelodia.convertToMIDI(leadPath, convertedMIDIPath, bpm=BPM, minduration=minDuration) 
+            #convertToMIDIWaon.convertToMIDI(leadPath, '../frontend/public/uploadSongs/leadPath.mid')
+
+            outFileName = f'{fileName}_backing'
+            makeBackingTrack.make(leadPath=convertedMIDIPath, outFileName=outFileName, BPM=BPM, offset=offset, cycles=cycles, arpeggio=arpeggio)
+            userBackingTrack = {"src": f'http://localhost:5000/myMusic?filename={outFileName}.mp3',
+                                "name": 'Backing Track ',
+                                "waveOutlineColor": '#c0dce0'}           
+            return app.response_class(response=json.dumps({'body': userBackingTrack}),
                                   status=200,
                                   mimetype='application/json')
 
@@ -128,21 +148,25 @@ def upload():
         song = request.files['file']
         userData = mongo.db.temp.find_one({'username':session.get('username')})
         IDName = userData.get('_id')
-        fileID = userData.get('fileNo')
+        fileID = userData.get('uploadFileID')
+
         filename = secure_filename(f'{IDName}-{fileID}') +'.wav'
         fileID += 1
-        mongo.db.temp.update_one({'_id': IDName}, {'$set':{'fileNo':fileID}})
+        mongo.db.temp.update_one({'_id': IDName}, {'$set':{'uploadFileID':fileID}})
         destination="/".join(['./static/userMusic', filename])
+        
         song.save(destination)
+
         try:
             noiseCancellation.noiseCancel(destination)
         except:
             pass
+
         userTrack = {"src": f'http://localhost:5000/myMusic?filename={filename}',
                    "name": 'Track ' + str(fileID-1),
                    "waveOutlineColor": '#c0dce0',
                    "customClass": "vocals"}
-        #session['uploadFilePath'] = destination
+
         return app.response_class(response=json.dumps({'body': userTrack}),
                                   status=200,
                                   mimetype='application/json')
@@ -187,7 +211,7 @@ def music():
 def load():
     userData = mongo.db.temp.find_one({'username':session.get('username')})
     IDName = userData.get('_id')
-    fileID = userData.get('fileNo')
+    fileID = userData.get('uploadFileID')
     filenames = os.listdir('./static/userMusic')
     songs = []
     for filename in filenames:
