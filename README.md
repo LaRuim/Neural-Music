@@ -36,3 +36,12 @@ In the third one, do:
 	cd frontend
 	npm start
 ```
+
+For convenience, three bash scripts are included; this will run all three of the above in the same terminal, making it harder to debug but easier to start. To use it, open the script in question (restart.sh is recommended), modify the Virtual Environment path, and run it after giving the required permissions.
+
+```
+	sudo chmod +rx start.sh
+	sudo chmod +rx stop.sh
+	sudo chmod +rx restart.sh
+	./restart.sh
+```

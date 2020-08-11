@@ -66,7 +66,7 @@ def create_network(network_input, n_vocab, mode):
 
     # Load the weights to each node
     # mode means major/minor
-    model.load_weights(f'./data/{mode}/{progression}/weights.hdf5')
+    model.load_weights(f'./data/{mode}/{progression}.hdf5')
 
     return model
 
@@ -131,13 +131,14 @@ def create_midi(prediction_output, BPM=120, offset=0, cycles=2):
     midi_stream = stream.Stream(output_notes)
     midi_stream.write('midi', fp=f'./converted/{fileName}.mid')
 
-def make(fileName, scale, notes=500, progression='C major', BPM=120, offset=0, cycles=2):
+def make(fileName, scale, notes=500, progression='6415', BPM=120, offset=0, cycles=2):
     # Generate a piano midi file
     #load the notes used to train the model
-    PATH_TO_NOTES = f'./data/notes'
-    with open(PATH_TO_NOTES, 'rb') as filepath:
-        notes = pickle.load(filepath)
     mode = scale.split()[-1]
+    PATH_TO_NOTES = f'./data/notes/{mode}'
+    with open(PATH_TO_NOTES, 'rb') as notesToLoad:
+        notes = pickle.load(notesToLoad)
+    
     # Get all pitch names
     pitchnames = sorted(set(item for item in notes))
     # Get all pitch names
@@ -148,4 +149,3 @@ def make(fileName, scale, notes=500, progression='C major', BPM=120, offset=0, c
     prediction_output = generate_notes(model, network_input, pitchnames, n_vocab, notes)
     create_midi(prediction_output, BPM=BPM, offset=offset, cycles=cycles)
     MIDI_to_mp3(f'./converted/{fileName}', outfileName=fileName)
-    #return fileName
