@@ -51,7 +51,7 @@ const App = () => {
   const [theme, themeToggler] = useDarkMode();
   const themeMode = theme === 'light' ? lightTheme : darkTheme;
   const [showAccompanimentModal, setAccompanimentModal] = useState(false);
-  
+  Authenticator(hasUserLoggedIn, dispatch)
   const Generator = () => {
     return (
       <>
@@ -81,7 +81,7 @@ const App = () => {
 
   const hamburger = useRef(); 
   OnClickOutside(hamburger, () => setOpen(false));
-  Authenticator(hasUserLoggedIn, dispatch)
+  
 
   if (!hasUserLoggedIn){
     return (

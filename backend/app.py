@@ -106,15 +106,22 @@ def generate():
             chordProgression = request.form.get('chordProgression')
             scale = request.form.get('scale')
             notes = request.form.get('notes')
+            sequenceLength = requiest.form.get('sequenceLength')
             userData = mongo.db.temp.find_one({'username':session.get('username')})
 
             IDName = userData.get('_id')
             fileID = userData.get('leadID')
-            filename = secure_filename(f'{IDName}:lead_{fileID}')
+            fileName = secure_filename(f'{IDName}:lead_{fileID}')
             fileID += 1
             mongo.db.temp.update_one({'_id': IDName}, {'$set':{'uploadFileID':fileID}}) 
 
-            makeLeadTrack.make(fileName=fileName, scale=scale, notes=notes, progression=chordProgression, BPM=BPM, offset=offset, cycles=cycles)
+            makeLeadTrack.make(fileName=fileName, scale=scale, notes=notes, progression=chordProgression, BPM=BPM, offset=offset, cycles=cycles, sequenceLength=sequenceLength)
+            userLeadTrack = {"src": f'http://localhost:5000/myMusic?filename={fileName}.mp3',
+                                "name": 'Lead Track ',
+                                "waveOutlineColor": '#c0dce0'}           
+            return app.response_class(response=json.dumps({'body': userLeadTrack}),
+                                  status=200,
+                                  mimetype='application/json')
 
         elif request.form.get('generate') == 'Backing':
             leadPath = request.form.get('path')
@@ -160,7 +167,7 @@ def upload():
         try:
             noiseCancellation.noiseCancel(destination)
         except:
-            pass
+            print('Noise Cancellation failed.')
 
         userTrack = {"src": f'http://localhost:5000/myMusic?filename={filename}',
                    "name": 'Track ' + str(fileID-1),

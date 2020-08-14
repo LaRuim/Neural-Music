@@ -1,8 +1,9 @@
 let defaultState = {
     hasUserLoggedIn: false,
     showLogin: true,
-    playeropen: true,
-    profilepageopen: false,
+    playerOpen: true,
+    profilePageOpen: false,
+    showAccompanimentModal: false,
     mode: 'light',
     path: './hello.mp3',
     userTracks: [[]]
@@ -18,14 +19,12 @@ const reducers = (state = defaultState, action) => {
             newState['showLogin'] = action.payload;
             return newState;
         case 'openplayer':
-            newState['backingopen'] = false
-            newState['profilepageopen'] = false
-            newState['playeropen'] = true
+            newState['profilePageOpen'] = false
+            newState['playerOpen'] = true
             return newState;
         case 'openprofile':
-            newState['profilepageopen'] = true
-            newState['playeropen'] = false
-            newState['backingopen'] = false
+            newState['profilePageOpen'] = true
+            newState['playerOpen'] = false
             return newState;
         case 'mode':
             newState['mode'] = action.payload;
@@ -44,6 +43,9 @@ const reducers = (state = defaultState, action) => {
             return newState
         case 'clearUserTracks':
             newState['userTracks'] = [[]]
+            return newState
+        case 'setAccompanimentModal':
+            newState['showAccompanimentModal'] = true
             return newState
         default:
             return state;

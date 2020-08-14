@@ -25,12 +25,10 @@ def getAllNotes(fileNames):
         songID+=1
         musicElements = None
 
-        try: # fileName has instrument parts
-            s2 = instrument.partitionByInstrument(MIDI)
-            musicElements = s2.parts[0].recurse() 
-        except: # fileName has notes in a flat structure
+        try:
             musicElements = MIDI.flat.notes
-
+        except:
+            continue
         name, mode = song.getScale(MIDI)
         if mode == "major":
             halfSteps = majors[name]
@@ -41,10 +39,14 @@ def getAllNotes(fileNames):
         for element in musicElements:
             if isinstance(element, note.Note):
                 transposedNote = str(element.transpose(halfSteps).pitch)
+                #print(element.pitch, transposedNote)
                 notes.append(transposedNote)
             elif isinstance(element, chord.Chord):
                 transposedChord = element.transpose(halfSteps)
-                notes.append('.'.join(str(n) for n in element.normalOrder))
+                #print(element.pitchedCommonName, transposedChord.pitchedCommonName)
+                notes.append('.'.join(str(n) for n in transposedChord.normalOrder))
+            elif isinstance(element, note.Rest):
+                pass
             else:
                 log.error(f'{element} is an anomaly.')
 
@@ -135,7 +137,6 @@ def train(model, networkInput, networkOutput, fileNames):
 def train_network(filePaths):
     """ Train a Neural Network to generate music """
     notes = getAllNotes(filePaths)
-
     # get amount of pitch names
     n_vocab = len(set(notes))
     networkInput, networkOutput = prepareSequences(notes, n_vocab)

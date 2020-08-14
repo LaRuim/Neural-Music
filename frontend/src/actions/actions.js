@@ -52,3 +52,10 @@ export const clearUserTracks = () => (
         type: 'clearUserTracks',
     }
 )
+
+export const setAccompanimentModal = (bool) => (
+    {
+        type: 'setAccompanimentModal',
+        payload: bool
+    }
+)

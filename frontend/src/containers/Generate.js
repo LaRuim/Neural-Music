@@ -16,9 +16,10 @@ const Generate = (props) => {
     const [index, setIndex] = useState(1)
     const [requiredTrackType, setRequiredTrackType] = useState(null)
     const [BPM, setBPM] = useState(130)
+    const [sequenceLength, setSequenceLength] = useState(100)
     const [offset, setOffset] = useState(0)
-    const [chordProgression, setProgression] = useState(null)
-    const [scale, setScale] = useState(null)
+    const [chordProgression, setProgression] = useState('6415')
+    const [scale, setScale] = useState('C Major')
     const [cycles, setCycles] = useState(2)
     const [noteTolerance, setNoteTolerance] = useState(70)
     const [arpeggio, setArpeggio] = useState(false)
@@ -27,14 +28,14 @@ const Generate = (props) => {
     }
     const dispatch = useDispatch();
 
-    const handleReq = (event, RequiredTrackType, TrackPath) => {
+    const handleReq = (event, TrackPath='') => {
         event.preventDefault();
-        
         var request = new FormData();
-        request.append("generate", RequiredTrackType);
-        request.append('path', TrackPath)
+        request.append("generate", requiredTrackType);
         request.append('BPM', BPM)
-        if (RequiredTrackType == 'Backing'){
+
+        if (requiredTrackType == 'Backing'){
+          request.append('path', TrackPath)
           request.append('Offset', offset)
           request.append('cycles', cycles)
           request.append('arpeggio', arpeggio)
@@ -43,6 +44,7 @@ const Generate = (props) => {
         else{
           request.append('chordProgression', chordProgression)
           request.append('scale', scale)
+          request.append('sequenceLength', sequenceLength)
         }
         fetch('http://localhost:5000/generate', {
             method: 'POST',
@@ -52,11 +54,11 @@ const Generate = (props) => {
             console.log(response)
             if (response['status'] == 200){
               response.json().then((responseJSON) => {
-              var response = responseJSON
-              var newTrack = []
-              newTrack.push(response['body'])
-              dispatch(addUserTrack(newTrack))
-              window.location.reload();
+                var response = responseJSON
+                var newTrack = []
+                newTrack.push(response['body'])
+                dispatch(addUserTrack(newTrack))
+                window.location.reload();
               })
             }
             else{
@@ -145,50 +147,73 @@ const Generate = (props) => {
                 </div>
               </Tooltip>
             </div>
-                <Button onClick={(event) => {
-                var tracks = store.getState().userTracks
-                var trackPath = tracks[tracks.length-1][0].src
-                handleReq(event, requiredTrackType, trackPath)
-                onNext(4);
-            }} variant='primary'>Generate</Button>
+            <Button onClick={(event) => {
+                  var tracks = store.getState().userTracks
+                  var trackPath = tracks[tracks.length-1][0].src
+                  handleReq(event, trackPath)
+                  onNext(4);
+                }} variant='primary'>
+              Generate
+            </Button>
           </div>
         </Modal.Body>
         </>}
         {index == 3 && <><Modal.Body> 
           <h4 style={{color:'black'}}>Track Details</h4>
           <p style={{color:'black'}}>
-            Choose a chord progression, a scale and BPM.
+            Choose your required parameters.
           </p>
           <div className='text-center'>
-            
-          <div>
-            <select className="browser-default custom-select">
-              <option value="1564">1-5-6-4</option>
-            </select>
-          </div>
-          <div>
-            <select className="browser-default custom-select">
-              <option>C Major</option>
-            </select>
-          </div>
-          <div className="def-number-input number-input">
-              <div>
-                <h5 style={{color:'black'}}>BPM</h5>
-                <input className="quantity" name="BPM" value={BPM} onChange={(event)=> setBPM(event.target.value)} type="number" />
+            <div className="def-number-input number-input small">
+              <Tooltip title="Beats Per Minute the generated Lead Track" placement="left">
+                <div style={{display: 'inline-block'}}>
+                  <h5 style={{color:'black', fontSize:'1.25em'}}>BPM</h5>
+                  <input className="quantity" name="BPM" value={BPM} onChange={(event)=> setBPM(event.target.value)} type="number"/>
+                </div>
+              </Tooltip>
+              <Tooltip title="Only change if you know what you're doing" placement="top">
+                <div style={{display: 'inline-block', paddingLeft:'2em'}}>
+                    <h5 style={{color:'black', fontSize:'1.25em'}}>Offset per chord</h5>
+                  <input className="quantity" name="offset" value={offset} onChange={(event)=> setOffset(event.target.value)} type="number" step="any"/>
+                </div>
+              </Tooltip>
+              <div style={{display: 'inline-block', paddingLeft:'2em'}}>
+                <h5 style={{color:'black', fontSize:'1.25em'}}>Chord Cycles per measure</h5>
+                <input className="quantity" name="Cycles" value={cycles} onChange={(event)=> setCycles(event.target.value)} type="number" />
               </div>
+            <br></br>
+            <br></br>
+              <Tooltip title="Only change if you know what you're doing" placement="left">
+                <div style={{display: 'inline-block', paddingLeft:'2em'}}>
+                    <h5 style={{color:'black', fontSize:'1.25em'}}>Sequence Length</h5>
+                  <input className="quantity" name="sequenceLength" value={sequenceLength} onChange={(event)=> setSequenceLength(event.target.value)} type="number" step='1'/>
+                </div>
+              </Tooltip>
+            <div style={{display: 'inline-block', paddingLeft:'2em'}}>
+              <h5 style={{color:'black', fontSize:'1.25em'}}>Progression</h5>
+              <select className="browser-default custom-select-small" onChange={(e)=>setProgression(e.target.value)}>
+                <option value="6415">6-4-1-5</option>
+              </select>
+            </div>
+            <div style={{display: 'inline-block', paddingLeft:'20em'}}>
+              <h5 style={{color:'black', fontSize:'1.25em'}}>Scale</h5>
+              <select className="browser-default custom-select-small" onChange={(e)=>setScale(e.target.value)}>
+                <option>C Major</option>
+              </select>
+            </div>
           </div>
-                <Button onClick={(event) => {
-                var tracks = store.getState().userTracks
-                var trackPath = tracks[tracks.length-1][0].src
-                handleReq(event, requiredTrackType, trackPath)
-                onNext(4);
-            }} variant='primary'>Generate</Button>
+            <Button onClick={(event) => {
+                  handleReq(event)
+                  onNext(4);
+              }} variant='primary'>
+                Generate
+            </Button>
           </div>
         </Modal.Body>
         </>}
         {index == 4 && <><Modal.Body>
           {requiredTrackType === 'Backing' && <h4 style={{color:'black'}}>Generating Backing Track</h4>}
-          {requiredTrackType === 'Lead' && <h4>Generating Lead Track</h4>}
+          {requiredTrackType === 'Lead' && <h4 style={{color:'black'}}>Generating Lead Track</h4>}
           <p style={{color:'black'}}>
             Please wait while your {requiredTrackType} Track is being generated. 
           </p>
