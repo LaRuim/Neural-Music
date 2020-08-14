@@ -17,12 +17,15 @@ const Generate = (props) => {
     const [requiredTrackType, setRequiredTrackType] = useState(null)
     const [BPM, setBPM] = useState(130)
     const [sequenceLength, setSequenceLength] = useState(100)
+    const [notes, setNotes] = useState(500)
     const [offset, setOffset] = useState(0)
-    const [chordProgression, setProgression] = useState('6415')
+    const [chordProgression, setProgression] = useState('all')
     const [scale, setScale] = useState('C Major')
     const [cycles, setCycles] = useState(2)
     const [noteTolerance, setNoteTolerance] = useState(70)
     const [arpeggio, setArpeggio] = useState(false)
+    const [seed, setSeed] = useState(0)
+
     const onNext = (VAL) => {
         setIndex(VAL);
     }
@@ -33,15 +36,17 @@ const Generate = (props) => {
         var request = new FormData();
         request.append("generate", requiredTrackType);
         request.append('BPM', BPM)
+        request.append('Offset', offset)
+        request.append('cycles', cycles)
 
         if (requiredTrackType == 'Backing'){
           request.append('path', TrackPath)
-          request.append('Offset', offset)
-          request.append('cycles', cycles)
           request.append('arpeggio', arpeggio)
           request.append('minDuration', noteTolerance)
         }
         else{
+          request.append('notes', notes)
+          request.append('seed', seed)
           request.append('chordProgression', chordProgression)
           request.append('scale', scale)
           request.append('sequenceLength', sequenceLength)
@@ -183,24 +188,39 @@ const Generate = (props) => {
               </div>
             <br></br>
             <br></br>
-              <Tooltip title="Only change if you know what you're doing" placement="left">
-                <div style={{display: 'inline-block', paddingLeft:'2em'}}>
-                    <h5 style={{color:'black', fontSize:'1.25em'}}>Sequence Length</h5>
-                  <input className="quantity" name="sequenceLength" value={sequenceLength} onChange={(event)=> setSequenceLength(event.target.value)} type="number" step='1'/>
-                </div>
-              </Tooltip>
-            <div style={{display: 'inline-block', paddingLeft:'2em'}}>
-              <h5 style={{color:'black', fontSize:'1.25em'}}>Progression</h5>
+            <div style={{display: 'inline-block'}}>
+              <h5 style={{color:'black', fontSize:'1.25em', paddingRight:'2em'}}>Progression</h5>
               <select className="browser-default custom-select-small" onChange={(e)=>setProgression(e.target.value)}>
+                <option value="all">1-5-6-4</option>
                 <option value="6415">6-4-1-5</option>
               </select>
             </div>
-            <div style={{display: 'inline-block', paddingLeft:'20em'}}>
+            <div style={{display: 'inline-block'}}>
               <h5 style={{color:'black', fontSize:'1.25em'}}>Scale</h5>
               <select className="browser-default custom-select-small" onChange={(e)=>setScale(e.target.value)}>
                 <option>C Major</option>
               </select>
             </div>
+            <br></br>
+            <br></br>
+            <Tooltip title="Only change if you know what you're doing" placement="bottom">
+              <div style={{display: 'inline-block', paddingLeft:'2em'}}>
+                  <h5 style={{color:'black', fontSize:'1.25em'}}>Seed</h5>
+                <input className="quantity" name="seed" value={seed} onChange={(event)=> setSeed(event.target.value)} type="number" step='1'/>
+              </div>
+            </Tooltip>
+            <Tooltip title="Only change if you know what you're doing" placement="top">
+              <div style={{display: 'inline-block', paddingLeft:'2em', paddingRight:'2em'}}>
+                  <h5 style={{color:'black', fontSize:'1.25em'}}>Number of notes</h5>
+                <input className="quantity" name="notes" value={notes} onChange={(event)=> setNotes(event.target.value)} type="number" step='1'/>
+              </div>
+            </Tooltip>
+            <Tooltip title="Only change if you know what you're doing" placement="top">
+              <div style={{display: 'inline-block', paddingLeft:'2em'}}>
+                  <h5 style={{color:'black', fontSize:'1.25em'}}>Sequence Length</h5>
+                <input className="quantity" name="sequenceLength" value={sequenceLength} onChange={(event)=> setSequenceLength(event.target.value)} type="number" step='1'/>
+              </div>
+            </Tooltip>
           </div>
             <Button onClick={(event) => {
                   handleReq(event)

@@ -42,8 +42,8 @@ const App = () => {
   
   const hasUserLoggedIn = useSelector(state => state.hasUserLoggedIn); // This is analogous to mapstatetoprops
   const showLogin = useSelector(state => state.showLogin);  
-  const playeropen = useSelector(state => state.playeropen)
-  const profilepageopen = useSelector(state => state.profilepageopen)
+  const playerOpen = useSelector(state => state.playerOpen)
+  const profilePageOpen = useSelector(state => state.profilePageOpen)
 
   const dispatch = useDispatch(); // Analogous to mapstatetodispatch
   const [open, setOpen] = useState(false);
@@ -146,7 +146,7 @@ const App = () => {
           <nav ref={hamburger}>
             <Burger open={open} setOpen={setOpen} />
             <Menu open={open} setOpen={setOpen} />
-            {playeropen && <nav>
+            {playerOpen && <nav>
               <nav style={{marginLeft: '30em', marginTop: '30px'}}>
                 <p>This page allows you to use a feature filled Audio Editor.
                 Drag and drop your audio file into the box to play around with it and edit it.
@@ -165,15 +165,15 @@ const App = () => {
 
             {showAccompanimentModal && generateAccompaniment}
             
-            {profilepageopen && <nav>
+            {profilePageOpen && <nav>
               <nav style={{marginLeft: '300px', marginTop: '30px'}}>
                 <div className='navbar'><h2>Profile Page</h2></div>
               </nav>
             </nav>
               }
             <nav className='myNav' style={{marginLeft: '10em'}}>
-              {playeropen && player}
-              {profilepageopen && profilepage}
+              {playerOpen && player}
+              {profilePageOpen && profilepage}
             </nav>
           </nav>
           </>

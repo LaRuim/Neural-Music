@@ -105,17 +105,18 @@ def generate():
         if request.form.get('generate') == 'Lead':  
             chordProgression = request.form.get('chordProgression')
             scale = request.form.get('scale')
-            notes = request.form.get('notes')
-            sequenceLength = requiest.form.get('sequenceLength')
+            notes = int(request.form.get('notes'))
+            sequenceLength = int(request.form.get('sequenceLength'))
+            randomSeed = int(request.form.get('seed'))
             userData = mongo.db.temp.find_one({'username':session.get('username')})
 
             IDName = userData.get('_id')
             fileID = userData.get('leadID')
             fileName = secure_filename(f'{IDName}:lead_{fileID}')
             fileID += 1
-            mongo.db.temp.update_one({'_id': IDName}, {'$set':{'uploadFileID':fileID}}) 
+            mongo.db.temp.update_one({'_id': IDName}, {'$set':{'leadID':fileID}}) 
 
-            makeLeadTrack.make(fileName=fileName, scale=scale, notes=notes, progression=chordProgression, BPM=BPM, offset=offset, cycles=cycles, sequenceLength=sequenceLength)
+            makeLeadTrack.make(fileName=fileName, randomSeed=randomSeed, scale=scale, Notes=notes, progression=chordProgression, BPM=BPM, offset=offset, cycles=cycles, sequenceLength=sequenceLength)
             userLeadTrack = {"src": f'http://localhost:5000/myMusic?filename={fileName}.mp3',
                                 "name": 'Lead Track ',
                                 "waveOutlineColor": '#c0dce0'}           

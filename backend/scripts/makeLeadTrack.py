@@ -66,12 +66,12 @@ def create_network(network_input, n_vocab, mode, progression):
 
     return model
 
-def generate_notes(model, network_input, pitchnames, n_vocab, Notes):
+def generate_notes(model, network_input, pitchnames, n_vocab, Notes, start=0):
     #Generate notes from the neural network based on a sequence of notes
     # pick a random sequence from the input as a starting point for the prediction
-    start = numpy.random.randint(0, len(network_input)-1)
+    if not start:
+        start = numpy.random.randint(0, len(network_input)-1)
     print(start)
-    start = 1
     int_to_note = dict((number, note) for number, note in enumerate(pitchnames))
 
     pattern = network_input[start]
@@ -133,10 +133,8 @@ def create_midi(prediction_output, Scale, fileName, BPM=120, offset=0, cycles=1,
 
         seed = random.randint(1,1000000000)
         # increase offset each iteration so that notes do not stack; the modulos are arbitrary
-        if seed % 7:
+        if seed % 32:
             Offset += offset/2
-        elif seed % 10:
-            Offset += offset/4
         else:
             Offset += offset
         #offset += 0.5
@@ -144,7 +142,7 @@ def create_midi(prediction_output, Scale, fileName, BPM=120, offset=0, cycles=1,
     midi_stream = stream.Stream(output_notes)
     midi_stream.write('midi', fp=f'./converted/{fileName}.mid')
 
-def make(fileName, scale, Notes=500, progression='all', BPM=120, offset=0, cycles=1, sequenceLength=100):
+def make(fileName, scale, Notes=500, randomSeed=0, progression='all', BPM=120, offset=0, cycles=1, sequenceLength=100):
     # Generate a piano midi file
     #load the notes used to train the model
     mode = scale.split()[-1]
@@ -159,7 +157,7 @@ def make(fileName, scale, Notes=500, progression='all', BPM=120, offset=0, cycle
 
     network_input, normalized_input = prepare_sequences(notes, pitchnames, n_vocab, sequenceLength=sequenceLength)
     model = create_network(normalized_input, n_vocab, mode, progression)
-    prediction_output = generate_notes(model, network_input, pitchnames, n_vocab, Notes)
+    prediction_output = generate_notes(model, network_input, pitchnames, n_vocab, Notes, start=randomSeed)
     create_midi(prediction_output, fileName=fileName, Scale=scale, BPM=BPM, offset=offset, cycles=cycles)
     MIDI_to_mp3(f'./converted/{fileName}', outfileName=fileName)
 
