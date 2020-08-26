@@ -1,7 +1,4 @@
-import os
 import subprocess
-import signal
-import sys
 
 def MIDI_to_mp3(infilePath, outfileName):
     try:

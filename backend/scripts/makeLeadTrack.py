@@ -140,9 +140,9 @@ def create_midi(prediction_output, Scale, fileName, BPM=120, offset=0, cycles=1,
         #offset += 0.5
 
     midi_stream = stream.Stream(output_notes)
-    midi_stream.write('midi', fp=f'./converted/{fileName}.mid')
+    midi_stream.write('midi', fp=f'./static/userMIDIs/{fileName}.mid')
 
-def make(fileName, scale, Notes=500, randomSeed=0, progression='all', BPM=120, offset=0, cycles=1, sequenceLength=100):
+def make(fileName, scale, Notes=500, randomSeed=0, progression='2346', BPM=120, offset=0, cycles=1, sequenceLength=100):
     # Generate a piano midi file
     #load the notes used to train the model
     mode = scale.split()[-1]
@@ -154,11 +154,11 @@ def make(fileName, scale, Notes=500, randomSeed=0, progression='all', BPM=120, o
     pitchnames = sorted(set(item for item in notes))
     # Get all pitch names
     n_vocab = len(set(notes))
-
+    
     network_input, normalized_input = prepare_sequences(notes, pitchnames, n_vocab, sequenceLength=sequenceLength)
     model = create_network(normalized_input, n_vocab, mode, progression)
     prediction_output = generate_notes(model, network_input, pitchnames, n_vocab, Notes, start=randomSeed)
     create_midi(prediction_output, fileName=fileName, Scale=scale, BPM=BPM, offset=offset, cycles=cycles)
-    MIDI_to_mp3(f'./converted/{fileName}', outfileName=fileName)
+    MIDI_to_mp3(f'./static/userMIDIs/{fileName}', outfileName=fileName)
 
 #make('here', 'C Major', offset=0, progression='all', BPM=60, cycles=1)

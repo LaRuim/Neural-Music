@@ -2,8 +2,6 @@
 
 # dependencies
 node_modules
-.pnp
-.pnp.js
 
 # testing
 coverage
@@ -19,20 +17,13 @@ build
 .env.production.local
 
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 __pycache__
-MIM_PPT.pptx
-Neural Music Generation.pdf
 .DS_Store
-weights-improvement.hdf5
-emitter.js
-License.pdf
-.mdb
-Procfile
 *.Identifier
 *.o
 *.wav
-waon
 *.hdf5
+*.mp3
+backups
+pretrained_models

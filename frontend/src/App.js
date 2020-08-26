@@ -6,6 +6,8 @@ import RegisterPage from './containers/Register'
 import AudioPlayer from './containers/AudioEditor'
 import ProfilePage from './containers/ProfilePage'
 import Generate from './containers/Generate'
+import ToMIDI from './containers/ToMIDI'
+import Separate from './containers/Separate'
 
 import * as actions from './actions/actions' ;
 
@@ -51,6 +53,8 @@ const App = () => {
   const [theme, themeToggler] = useDarkMode();
   const themeMode = theme === 'light' ? lightTheme : darkTheme;
   const [showAccompanimentModal, setAccompanimentModal] = useState(false);
+  const [showMIDIModal, setMIDIModal] = useState(false);
+  const [showSpleetModal, setSpleetModal] = useState(false)
   Authenticator(hasUserLoggedIn, dispatch)
   const Generator = () => {
     return (
@@ -62,8 +66,31 @@ const App = () => {
       </>
     )
   }
+  const MIDIfier = () => {
+    return (
+      <>
+        <ToMIDI
+          show={showMIDIModal}
+          onHide={() => setMIDIModal(false)}
+          />
+      </>
+    )
+  }
+  const Splitter = () => {
+    return (
+      <>
+        <Separate
+          show={showSpleetModal}
+          onHide={() => setSpleetModal(false)}
+          />
+      </>
+    )    
+  }
+
   const [collapseID, toggleCollapse] = useState('')
-  const generateAccompaniment = Generator() 
+  const generateAccompaniment = Generator()
+  const generateMIDI = MIDIfier() 
+  const Spleet = Splitter()
   const login = LoginPage();
   const register = RegisterPage(); 
   const player = AudioPlayer(themeMode);
@@ -159,12 +186,30 @@ const App = () => {
                     <i>Generate accompaniment</i>
                     </span>
                 </ButtonGroup>
+                <ButtonGroup className="btn-select-state-group">
+                    <span
+                    className="btn btn-warning"
+                    title="Convert your Audio to a MIDI format, and hear an mp3 preview."
+                    onClick = {()=>setMIDIModal(true)}>
+                    <i>MIDIfy your Audio!</i>
+                    </span>
+                </ButtonGroup>
+                <ButtonGroup className="btn-select-state-group">
+                    <span
+                    className="btn btn-cyan"
+                    title="Split your audio into its constituents."
+                    onClick = {()=>setSpleetModal(true)}>
+                    <i>Spleet!</i>
+                    </span>
+                </ButtonGroup>
               </nav>
             </nav>
             }
 
             {showAccompanimentModal && generateAccompaniment}
-            
+            {showMIDIModal && generateMIDI}
+            {showSpleetModal && Spleet}
+
             {profilePageOpen && <nav>
               <nav style={{marginLeft: '300px', marginTop: '30px'}}>
                 <div className='navbar'><h2>Profile Page</h2></div>

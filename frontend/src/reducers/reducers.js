@@ -39,7 +39,6 @@ const reducers = (state = defaultState, action) => {
             else{
                 newState['userTracks'] = [...state.userTracks, action.payload]
             }
-            console.log(newState, 'inside reducer')
             return newState
         case 'clearUserTracks':
             newState['userTracks'] = [[]]

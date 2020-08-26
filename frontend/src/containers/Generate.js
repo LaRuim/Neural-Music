@@ -19,8 +19,9 @@ const Generate = (props) => {
     const [sequenceLength, setSequenceLength] = useState(100)
     const [notes, setNotes] = useState(500)
     const [offset, setOffset] = useState(0)
-    const [chordProgression, setProgression] = useState('all')
-    const [scale, setScale] = useState('C Major')
+    const [chordProgression, setProgression] = useState('2346')
+    const [scale, setScale] = useState('C')
+    const [mode, setMode] = useState('Major')
     const [cycles, setCycles] = useState(2)
     const [noteTolerance, setNoteTolerance] = useState(70)
     const [arpeggio, setArpeggio] = useState(false)
@@ -48,7 +49,7 @@ const Generate = (props) => {
           request.append('notes', notes)
           request.append('seed', seed)
           request.append('chordProgression', chordProgression)
-          request.append('scale', scale)
+          request.append('scale', scale+' '+mode)
           request.append('sequenceLength', sequenceLength)
         }
         fetch('http://localhost:5000/generate', {
@@ -104,7 +105,7 @@ const Generate = (props) => {
                 <Button onClick={(event) => {
                     setRequiredTrackType('Lead')
                     onNext(3);
-                }} variant='primary'>Lead Track (WIP)</Button>
+                }} variant='primary'>Lead Track</Button>
               </ButtonGroup>
           </div>
         </Modal.Body>
@@ -188,17 +189,35 @@ const Generate = (props) => {
               </div>
             <br></br>
             <br></br>
-            <div style={{display: 'inline-block'}}>
-              <h5 style={{color:'black', fontSize:'1.25em', paddingRight:'2em'}}>Progression</h5>
+            <div style={{display: 'inline-block', paddingRight:'1em'}}>
+              <h5 style={{color:'black', fontSize:'1.25em'}}>Progression</h5>
               <select className="browser-default custom-select-small" onChange={(e)=>setProgression(e.target.value)}>
-                <option value="all">1-5-6-4</option>
+                <option value="2346">2-3-4-6</option>
                 <option value="6415">6-4-1-5</option>
               </select>
             </div>
-            <div style={{display: 'inline-block'}}>
+            <div style={{display: 'inline-block', paddingRight:'1em', paddingLeft:'1em'}}>
               <h5 style={{color:'black', fontSize:'1.25em'}}>Scale</h5>
               <select className="browser-default custom-select-small" onChange={(e)=>setScale(e.target.value)}>
-                <option>C Major</option>
+                <option>C</option>
+                <option>C#</option>
+                <option>D</option>
+                <option>D#</option>
+                <option>E</option>
+                <option>F</option>
+                <option>F#</option>
+                <option>G</option>
+                <option>G#</option>
+                <option>A</option>
+                <option>A#</option>
+                <option>B</option>
+              </select>
+            </div>
+            <div style={{display: 'inline-block', paddingLeft:'1em'}}>
+              <h5 style={{color:'black', fontSize:'1.25em'}}>Mode</h5>
+              <select className="browser-default custom-select-small" onChange={(e)=>setMode(e.target.value)}>
+                <option>Major</option>
+                <option>Minor</option>
               </select>
             </div>
             <br></br>

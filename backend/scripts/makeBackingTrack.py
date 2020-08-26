@@ -82,8 +82,8 @@ def makeBackingTrack(chordData, listOfChordObjects, timeSignature, BPM, measureD
             if not arpeggio:
                 Offset += offset/cycles
 
-    music.stream.Stream(outputNotes).write('midi', fp='./converted/backingtrack.mid')
-    MIDI_to_mp3('./converted/backingtrack', outFileName)
+    music.stream.Stream(outputNotes).write('midi', fp='./debug/backingtrack.mid')
+    MIDI_to_mp3('./debug/backingtrack', outFileName)
 
 
 def make(leadPath, outFileName='Backing Track', BPM=120, offset=0, cycles=2, arpeggio=False):
@@ -126,7 +126,7 @@ def make(leadPath, outFileName='Backing Track', BPM=120, offset=0, cycles=2, arp
         #print()
         measures.append(myNotes)
         measureDurations.append(measure.duration.quarterLength)
-    Measures.write('midi', fp='./smooth.mid') # For debugging
+    Measures.write('midi', fp='./debug/smooth.mid') # For debugging
 
     allPossibleChordsForScale = song.getAllPossibleTriadsForScale(keyMode, keyRootNote)
     listOfChordObjects = song.getBestChordsForMeasures(measures, allPossibleChordsForScale)
@@ -136,20 +136,3 @@ def make(leadPath, outFileName='Backing Track', BPM=120, offset=0, cycles=2, arp
     makeBackingTrack(chordData, listOfChordObjects, timeSignature, BPM, measureDurations, offset, cycles, arpeggio, outFileName)
 
 #make()
-
-'''def beta(BPM=130):
-    leadPath = '../../frontend/public/uploadSongs/lead.mid'
-    MIDI = song.getMIDI(leadPath)
-    #BPM = 112
-    timeSignatures = song.getTimeSignature(MIDI)
-    timeSignature = timeSignatures[0]
-
-    notes = song.getFlattenedNotes(MIDI)
-    for note in notes:
-        note.quarterLength = (round(note.quarterLength * 8))/8
-    Measures = music.stream.Stream(notes).makeMeasures().makeTies()
-    measures = []
-    for measure in Measures:
-        measures.append(list(measure))
-        print(measure.duration.quarterLength)
-    Measures.write('midi', fp='./smooth.mid')'''

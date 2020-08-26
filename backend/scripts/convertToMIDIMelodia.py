@@ -121,7 +121,7 @@ def hz2midi(hz):
     return midi
 
 
-def convertToMIDI(infile, outfile, bpm=120, smooth=0, minduration=0.1,
+def convertToMIDI(infile, outfile, bpm=120, smooth=0, minduration=0.1, voicing=10,
                           savejams=False):
 
     # define analysis parameters
@@ -142,7 +142,7 @@ def convertToMIDI(infile, outfile, bpm=120, smooth=0, minduration=0.1,
     # extract melody using melodia vamp plugin
     print("Extracting melody f0 with MELODIA...")
     melody = vamp.collect(data, sr, "mtg-melodia:melodia",
-                          parameters={"voicing": 10})
+                          parameters={"voicing": voicing})
 
     # hop = melody['vector'][0]
     pitch = melody['vector'][1]
