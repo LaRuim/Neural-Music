@@ -21,9 +21,3 @@ npm-debug.log*
 __pycache__
 .DS_Store
 *.Identifier
-*.o
-*.wav
-*.hdf5
-*.mp3
-backups
-pretrained_models
