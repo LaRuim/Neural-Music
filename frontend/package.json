@@ -17,7 +17,7 @@
     "mdbootstrap": "^4.19.1",
     "mdbreact": "4.25.4",
     "ngrok": "^3.2.7",
-    "node-sass": "^4.14.1",
+    "node-sass": "^7.0.0",
     "poppers": "^0.1.2",
     "react": "^16.13.1",
     "react-audio-player": "^0.13.0",
